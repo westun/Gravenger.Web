@@ -1,0 +1,79 @@
+﻿
+@section Styles{
+    <style>
+        .feed {
+            height: 600px;
+            border: none;
+            overflow: auto;
+        }
+
+            .feed::-webkit-scrollbar {
+                background-color: white;
+            }
+
+            .feed::-webkit-scrollbar-thumb {
+                background-color: #EFEFEF;
+                border-radius: 0px;
+            }
+
+
+        .feed-back-to-top-btn {
+            border-radius: 25px;
+            border: 1px solid #f8f7f9;
+            height: 50px;
+            width: 50px;
+            font-size: 45px;
+            color: #dedbe0;
+            background-color: #f8f7f9;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            left: 963px;
+            z-index: 99;
+            outline: none;
+            display: none;
+        }
+            .feed-back-to-top-btn:hover {
+                background-color: #E8E7E9;
+            }
+        .feed-content {
+            margin-bottom: 10px;
+            width: 600px;
+            border-bottom: 2px solid #EFEFEF;
+            color: black;
+            padding: 5px;
+        }
+
+        @@media screen and (max-device-width: 700px) {
+            .feed-content {
+                width: 100%;
+                overflow-wrap: break-word;
+            }
+        }
+
+        .feed-content .image img {
+            height: 300px;
+            width: 300px;
+        }
+        .image {
+            height: 300px;
+            width: 300px;
+        }
+        .feed-item-date {
+            font-size: 12px;
+            font-weight: bold;
+            color: #999A9A;
+            padding-left: 45px;
+        }
+        .open-card-modal-link {
+            cursor: pointer;
+        }
+        /*once style is finalized, move to stylebw.css*/
+    </style>
+}
+
+<feed-page></feed-page>
+
+@section VueComponentLocalRegistration {
+    @Html.Partial("VueComponents/FeedPage")
+}

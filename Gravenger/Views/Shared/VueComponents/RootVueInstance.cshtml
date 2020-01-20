@@ -1,0 +1,45 @@
+﻿
+@Html.Partial("VueComponents/_ComponentGlobalRegistration")
+
+<script type="text/javascript">
+    var routes = [
+        { path: "/cards", component: Vue.component('card-list'), name: 'home' },
+        { path: "/card/:id", component: Vue.component('card-tiles'), name: 'card-tiles' },
+        //{ path: "*", redirect: '/' }
+    ];
+
+    var router = new VueRouter({
+        routes: routes
+    });
+
+    var rootVM = new Vue({
+        router: router,
+        data: {
+            accountService: new AccountService({ rootUrl: "@Url.Content("~/")" }),
+            currentAccountID: @User.Identity.GetAccountID(),
+            currentProfile: {},
+        },
+        methods: {
+            init: function () {
+                var vm = this;
+
+                //for every additional api call that needs to be made, add another parameter to the $.when function. https://api.jquery.com/jquery.when/
+                return $.when(
+                    vm.loadCurrentProfile()
+                );
+            },
+            loadCurrentProfile: function () {
+                var vm = this;
+                return vm.accountService.get(vm.currentAccountID).then(function (data) {
+                    vm.currentProfile = data;
+                });
+            },
+        }
+    });
+
+    //Ensure all api calls made in the root vue instance have completed before the root vue instance is mounted to the DOM.
+    //Otherwise any data in the root vue instance (such as "currentProfile") may not be available to child components.
+    $.when(rootVM.$root.init().then(function (data) {
+        rootVM.$mount('#main-app');
+    }));
+</script>

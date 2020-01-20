@@ -1,0 +1,341 @@
+﻿<script type="text/x-template" id="boards-page-template">
+    <div class="board-container">
+
+        <div class="boards-modal" id="topcards-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    POPULAR POSTCARDS
+                    <span class="modal-close-button" id="topcards-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="board-item" v-for="card in topActiveCards">
+                    <a v-bind:href="getCardUrl(card.cardID)">
+                        {{card.title}}
+                        <span class="basic-number">
+                            {{card.totalUsers}} users
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="boards-modal" id="topusers-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    TOP USERS
+                    <span class="modal-close-button" id="topusers-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="board-item" v-for="user in topLikedUsers" key="user.accountID">
+                    <a v-bind:href="getProfileUrl(user.username)">
+                        <img class="profile-pic-icon" v-bind:src="user.profileImageFullPath" />
+                        {{user.username}}
+                        <img v-bind:src="imgUrls.star" />
+                        <span class="basic-number">
+                            {{user.totalLikes}}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="boards-modal" id="toplikedcards-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    TOP POSTCARDS
+                    <span class="modal-close-button" id="toplikedcards-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="board-item" v-for="card in topLikedCards" key="card.cardID">
+                    <a v-bind:href="getCardUrl(card.cardID)">
+                        {{card.title}}
+                        <img v-bind:src="imgUrls.star" />
+                        <span class="basic-number">
+                            {{card.totalLikes}}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="boards-modal" id="mycards-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    MY POSTCARDS
+                    <span class="modal-close-button" id="mycards-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="board-item" v-for="postcard in myTopPostcards" key="postcard.postcardID">
+                    <a v-bind:href="getCardUrl(postcard.cardID)">
+                        {{postcard.title}}
+                        <img v-bind:src="imgUrls.star" />
+                        <span class="basic-number">
+                            {{postcard.likes}}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="boards-modal" id="myfollowers-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    MY FOLLOWERS
+                    <span class="modal-close-button" id="myfollowers-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="board-item" v-for="user in topLikedFollowers" key="user.accountID">
+                    <a v-bind:href="getProfileUrl(user.username)">
+                        <img class="profile-pic-icon" v-bind:src="user.profileImageFullPath" />
+                        {{user.username}}
+                        <img v-bind:src="imgUrls.star" />
+                        <span class="basic-number">
+                            {{user.totalLikes}}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="boards-modal" id="myfollowees-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    MY FOLLOWEES
+                    <span class="modal-close-button" id="myfollowees-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="board-item" v-for="user in topLikedFollowees" v-bind:key="user.accountID">
+                    <a v-bind:href="getProfileUrl(user.username)">
+                        <img class="profile-pic-icon" v-bind:src="user.profileImageFullPath" />
+                        {{user.username}}
+                        <img v-bind:src="imgUrls.star" />
+                        <span class="basic-number">
+                            {{user.totalLikes}}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-cards">
+            <span class="menu" title="cards that have the most users" v-on:click="openBoardModal('topcards')">
+                POPULAR POSTCARDS
+            </span>
+            <div class="inner-board">
+                <p class="board-item" v-for="card in topActiveCards">
+                    <a v-bind:href="getCardUrl(card.cardID)">
+                        {{card.title}}
+                        <span class="basic-number">
+                            {{card.totalUsers}} users
+                        </span>
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="top-users">
+            <span class="menu" title="users who have the most total stars" v-on:click="openBoardModal('topusers')">
+                TOP USERS
+            </span>
+            <p class="board-item" v-for="user in topLikedUsers" key="user.accountID">
+                <a v-bind:href="getProfileUrl(user.username)">
+                    <img class="profile-pic-icon" v-bind:src="user.profileImageFullPath" />
+                    {{user.username}}
+                    <img v-bind:src="imgUrls.star" />
+                    <span class="basic-number">
+                        {{user.totalLikes}}
+                    </span>
+                </a>
+            </p>
+        </div>
+
+        <div class="trending">
+            <span class="menu" title="cards that are popular today" v-on:click="openBoardModal('toplikedcards')">
+                TOP POSTCARDS
+            </span>
+            <div class="inner-board">
+                <p class="board-item" v-for="card in topLikedCards">
+                    <a v-bind:href="getCardUrl(card.cardID)">
+                        {{card.title}}
+                        <img v-bind:src="imgUrls.star" />
+                        <span class="basic-number">
+                            {{card.totalLikes}}
+                        </span>
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="my-cards">
+            <span class="menu" v-on:click="openBoardModal('mycards')">
+                MY POSTCARDS
+            </span>
+            <p class="board-item" v-for="postcard in myTopPostcards" key="postcard.postcardID">
+                <a v-bind:href="getCardUrl(postcard.cardID)">
+                    {{postcard.title}}
+                    <img v-bind:src="imgUrls.star" />
+                    <span class="basic-number">
+                        {{postcard.likes}}
+                    </span>
+                </a>
+            </p>
+        </div>
+
+        <div class="my-followers">
+            <span class="menu" v-on:click="openBoardModal('myfollowers')">
+                MY FOLLOWERS
+            </span>
+            <p class="board-item" v-for="user in topLikedFollowers" key="user.accountID">
+                <a v-bind:href="getProfileUrl(user.username)">
+                    <img class="profile-pic-icon" v-bind:src="user.profileImageFullPath" />
+                    {{user.username}}
+                    <img v-bind:src="imgUrls.star" />
+                    <span class="basic-number">
+                        {{user.totalLikes}}
+                    </span>
+                </a>
+            </p>
+        </div>
+
+        <div class="my-followers">
+            <span class="menu" v-on:click="openBoardModal('myfollowees')">
+                MY FOLLOWEES
+            </span>
+            <p class="board-item" v-for="user in topLikedFollowees" v-bind:key="user.accountID">
+                <a v-bind:href="getProfileUrl(user.username)">
+                    <img class="profile-pic-icon" v-bind:src="user.profileImageFullPath" />
+                    {{user.username}}
+                    <img v-bind:src="imgUrls.star" />
+                    <span class="basic-number">
+                        {{user.totalLikes}}
+                    </span>
+                </a>
+            </p>
+        </div>
+
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('boards-page', {
+        template: '#boards-page-template',
+        data: function () {
+            return {
+                apiUrls: {
+                    myTopPostcards: "@Url.Content("~/api/board/MyTopPostcards")",
+                    topLikedUsers: "@Url.Content("~/api/board/TopLikedUsers")",
+                    topActiveCards: "@Url.Content("~/api/board/TopActiveCards")",
+                    topLikedFollowers: "@Url.Content("~/api/board/TopLikedFollowers")",
+                    topLikedFollowees: "@Url.Content("~/api/board/TopLikedFollowees")",
+                    topLikedCards: "@Url.Content("~/api/board/TopLikedCards")",
+                },
+                imgUrls: {
+                    defaultProfileImageUrl: "@Url.Content("~/Content/img/icons/iconprof.png")",
+                    star: "@Url.Content("~/Content/img/icons/star.png")",
+                },
+                pageUrls: {
+                    card: "@Url.Content("~/card#/card/")",
+                    profile: "@Url.Content("~/profile/display/")"
+                },
+                myTopPostcards: [],
+                topLikedUsers: [],
+                topActiveCards: [],
+                topLikedFollowers: [],
+                topLikedFollowees: [],
+                topLikedCards: [],
+            };
+        },
+        created: function () {
+            this.loadMyTopPostcards();
+            this.loadTopLikedUsers();
+            this.loadTopActiveCards();
+            this.loadTopLikedFollowers();
+            this.loadTopLikedFollowees();
+            this.loadTopLikedCards();
+        },
+        methods: {
+            loadMyTopPostcards: function () {
+                var vm = this;
+                $.get(vm.apiUrls.myTopPostcards, function (data) {
+                    vm.myTopPostcards = data;
+                });
+            },
+            loadTopLikedUsers: function () {
+                var vm = this;
+                $.get(vm.apiUrls.topLikedUsers, function (data) {
+                    vm.topLikedUsers = data;
+                    _.each(vm.topLikedUsers, function (user) {
+                        if (!user.profileImageFullPath) {
+                            user.profileImageFullPath = vm.imgUrls.defaultProfileImageUrl;
+                        }
+                    });
+                });
+            },
+            loadTopActiveCards: function () {
+                var vm = this;
+                $.get(vm.apiUrls.topActiveCards, function (data) {
+                    vm.topActiveCards = data;
+                });
+            },
+            loadTopLikedFollowers: function () {
+                var vm = this;
+                $.get(vm.apiUrls.topLikedFollowers, function (data) {
+                    vm.topLikedFollowers = data;
+                    _.each(vm.topLikedFollowers, function (user) {
+                        if (!user.profileImageFullPath) {
+                            user.profileImageFullPath = vm.imgUrls.defaultProfileImageUrl;
+                        }
+                    });
+                });
+            },
+            loadTopLikedFollowees: function () {
+                var vm = this;
+                $.get(vm.apiUrls.topLikedFollowees, function (data) {
+                    vm.topLikedFollowees = data;
+                    _.each(vm.topLikedFollowees, function (user) {
+                        if (!user.profileImageFullPath) {
+                            user.profileImageFullPath = vm.imgUrls.defaultProfileImageUrl;
+                        }
+                    });
+                });
+            },
+            loadTopLikedCards: function () {
+                var vm = this;
+                $.get(vm.apiUrls.topLikedCards, function (data) {
+                    vm.topLikedCards = data;
+                });
+            },
+            getProfileUrl: function (username) {
+                return this.pageUrls.profile + username;
+            },
+            getCardUrl: function (cardID) {
+                return this.pageUrls.card + cardID;
+            },
+            openBoardModal: function (id) {
+                var screen = window.matchMedia("(max-width: 700px)");
+                if (screen.matches) {
+                    var modal = document.getElementById(id + '-modal');
+                    modal.style.display = "grid";
+                    var closebutton = document.getElementById(id + '-close');
+                    window.onclick = function (event) {
+                        if (event.target == modal || event.target == closebutton) {
+                            modal.style.display = "none";
+                        };
+                    };
+                };
+            }
+        }
+    });
+</script>
+
+<style>
+    .submenu.users {
+        background-color: #713A9E;
+    }
+</style>

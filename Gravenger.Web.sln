@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gravenger", "Gravenger\Gravenger.csproj", "{8A33B64E-ADA5-4B0B-BE2B-A34A6359752C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8A33B64E-ADA5-4B0B-BE2B-A34A6359752C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A33B64E-ADA5-4B0B-BE2B-A34A6359752C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A33B64E-ADA5-4B0B-BE2B-A34A6359752C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A33B64E-ADA5-4B0B-BE2B-A34A6359752C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {728E31D0-6D09-4214-9DC6-B29D3C9D0147}
+	EndGlobalSection
+EndGlobal

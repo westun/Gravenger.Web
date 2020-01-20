@@ -1,0 +1,96 @@
+﻿<script type="text/x-template" id="card-list-template">
+    <div>
+        <search-bar v-on:search-complete="updateCardList"></search-bar>
+
+        <div class="clearfix">
+            <div class="float-left">
+                <router-link class="btn btn-primary btn-lg" v-bind:to="{ name: 'addCard' }">Add New Card</router-link>
+            </div>
+            <div class="float-right">
+                <div class="form-group form-inline">
+                    <label class="control-label">Sort By:&nbsp;</label>
+                    <select class="form-control" v-model="sortBy">
+                        <option disabled value="">Choose sorting...</option>
+                        <option v-for="option in sortOptions" v-bind:value="option.value">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <h2 v-if="!cards.length">No results found</h2>
+        <div v-else>
+            <h2>{{ cards.length }} Results</h2>
+            <div class="row">
+                <div class="col-sm-3 mb-5" v-for="card in cards" v-bind:key="card.cardID">
+                    <div class="card text-center" style="cursor:pointer">
+                        <h5 class="card-header">
+                            *****
+                        </h5>
+                        <img class="card-img-top" alt="" src="//gravenger.blob.core.windows.net/icons/if_image_picture_107214_2.png" />
+                        <div class="card-body">
+                            <h5 class="card-title">{{ card.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Created: 3/30/2018</h6>
+                            <p class="card-text">
+                                Status: Active<br />
+                                Users: 5
+                            </p>
+                            <a href="#" class="card-link">Tiles</a>
+                            <a href="#" class="card-link">User Photos</a>
+                            <a href="#" class="card-link">Postcards</a>
+                            <a href="#" class="card-link">Remove</a>
+                        </div>
+                        <div class="card-footer">
+                            Edit Details
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('card-list', {
+        template: '#card-list-template',
+        data: function () {
+            return {
+                cardApiUrl: "@Url.Content("~/api/card/")",
+                cards: [],
+                sortBy: 'title',
+                sortOptions: [
+                    { text: 'Title', value: 'title' }
+                ]
+            };
+        },
+        created: function () {
+            this.loadCards();
+        },
+        watch: {
+            sortBy: function (newValue, oldValue) {
+                this.sortCards(newValue);
+            }
+        },
+        methods: {
+            loadCards: function () {
+                var vm = this;
+                return $.get(vm.cardApiUrl, function (data) {
+                    vm.cards = data;
+                    vm.sortCards(vm.sortBy);
+                });
+            },
+            //TODO: this exposes a method to update the card list with any value.  Is this the appropriate way to hanlde this?
+            updateCardList: function (cards) {
+                this.cards = cards;
+                this.sortCards(this.sortBy);
+            },
+            sortCards: function (sortBy) {
+                this.cards = _.sortBy(this.cards, function (card) {
+                    return card[sortBy].toLowerCase();
+                });
+            }
+        }
+    });
+</script>

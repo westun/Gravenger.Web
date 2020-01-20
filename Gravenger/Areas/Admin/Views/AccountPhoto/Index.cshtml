@@ -1,0 +1,27 @@
+﻿
+<div id="app" v-cloak>
+    <router-view></router-view>
+</div>
+
+@section Scripts{
+
+    @Html.Partial("VueComponents/AccountList")
+    @Html.Partial("VueComponents/AccountPhotos")
+
+    <script type="text/javascript">
+        var routes = [
+            { path: "/", component: Vue.component('account-list'), name: 'home' },
+            { path: "/:id", component: Vue.component('account-photos'), name: 'photos' },
+            { path: "*", redirect: '/' }
+        ];
+
+        var router = new VueRouter({
+            routes: routes
+        });
+
+        var vm = new Vue({
+            el: '#app',
+            router: router
+        });
+    </script>
+}

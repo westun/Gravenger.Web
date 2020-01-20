@@ -1,0 +1,19 @@
+﻿<script type="text/javascript">
+    var vm = new Vue({
+        el: '#invitation-nav',
+        data: {
+            navItems: [
+                {
+                    text: 'Create invitation',
+                    url: ("@Url.Action("invite", "invitation")").toLowerCase(),
+                    active: ("@Request.Path").toLowerCase() == ("@Url.Action("invite", "invitation")").toLowerCase()
+                },
+                {
+                    text: 'View invitation list',
+                    url: ("@Url.Action("list", "invitation")").toLowerCase(),
+                    active: ("@Request.Path").toLowerCase() == ("@Url.Action("list", "invitation")").toLowerCase()
+                }
+            ]
+        }
+    });
+</script>

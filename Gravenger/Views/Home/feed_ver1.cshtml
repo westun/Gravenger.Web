@@ -1,0 +1,78 @@
+﻿
+@section Styles{
+<style>
+    .feed {
+        height: 600px;
+        border: none;
+        overflow: auto;
+    }
+
+    .feed::-webkit-scrollbar {
+        background-color: white;
+    }
+
+    .feed::-webkit-scrollbar-thumb {
+        background-color: #EFEFEF;
+        border-radius: 0px;
+    }
+
+    .feed-content {
+        margin-bottom: 10px;
+        height: 100px;
+        width: 300px;
+        border: 2px solid #7139A9;
+        color: black;
+        padding: 5px;
+    }
+
+    .image {
+        height: 300px;
+        width: 300px;
+    }
+    /*once style is finalized, move to stylebw.css*/
+</style>
+}
+
+<div id="feedApp" v-cloak>
+    <div class="menu">
+        <p>
+            Today's featured postcard:
+            <br />
+            <a class="cardname" href="~/Content/html/cards/scavengerhunt04012018.html">Daily Scavenger Hunt</a>
+        </p>
+    </div>
+    <div class="feed">
+        <div class="space-bottom-20" v-for="feedItem in feedItems">
+            <div>
+                {{ feedItem.message }}
+            </div>
+            <div class="feed-content image" v-for="imageUrl in feedItem.imageUrls">
+                <img v-bind:src="imageUrl" v-bind:alt="feedItem.message" />
+            </div>
+            <hr />
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: '#feedApp',
+            data: {
+                feedApiUrl: "@Url.Content("~/api/feed/v1/items")",
+                feedItems: []
+            },
+            created: function () {
+                this.loadFeed();
+            },
+            methods: {
+                loadFeed: function () {
+                    var vm = this;
+                    $.get(vm.feedApiUrl, function (data) {
+                        vm.feedItems = data;
+                    });
+                }
+            }
+        });
+    </script>
+}

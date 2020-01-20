@@ -1,0 +1,91 @@
+﻿<script type="text/x-template" id="card-list-template">
+    <div>
+        <div>
+            <label>Search:</label>
+            <input type="text" v-model="searchCriteria" />
+            <button class="basic-button" v-on:click="search">Search</button>
+        </div>
+        <div v-show="!cards.length">
+            <h2>No results found</h2>
+        </div>
+        <div class="cardbox space-top-30" v-show="cards.length">
+            <div class="card-list-container">
+                <div class="card-category-container" v-for="category in categories">
+                    <div class="card-category-title">
+                        {{ category }}
+                    </div>
+                    <div v-for="card in cardsByCategory[category]">
+                        <input style="cursor:pointer" type="button" class="cardname" v-bind:value="card.title" v-on:click="viewCard(card)"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('card-list', {
+        template: '#card-list-template',
+        data: function () {
+            return {
+                cards: {},
+                cardService: new CardService({ rootUrl: "@Url.Content("~/")" }),
+                categories: [],
+                minimumSearchCriteriaLengh: 3,
+                searchCriteria: '',
+            }
+        },
+        created: function () {
+            var vm = this;
+            vm.loadCardList();
+        },
+        computed: {
+            cardsByCategory: function () {
+                var vm = this;
+                return _.groupBy(vm.cards, function (card) {
+                    return card.category == null ? "Not Categorized" : card.category;
+                });
+            },
+        },
+        watch: {
+            cardsByCategory: function (value, oldValue) {
+                this.categories = _.keys(value);
+                var data = this.categories;
+                var keyNew = data.indexOf("New");
+                if (this.cardsByCategory.New && this.cardsByCategory.New.length > 0) {
+                    data.splice(keyNew, 1);
+                    data.unshift("New");
+                }
+            },
+            searchCriteria: function (value, oldValue) {
+                this.search();
+            },
+        },
+        methods: {
+            loadCardList: function () {
+                var vm = this;
+                vm.cardService.getAll().then(function (data) {
+                    vm.cards = data;
+                });
+            },
+            search: _.debounce(function () {
+                var vm = this;
+                if (vm.searchCriteria == null || vm.searchCriteria.length < vm.minimumSearchCriteriaLengh
+                    && vm.searchCriteria != '') {
+                    return;
+                }
+
+                vm.cardService.search(vm.searchCriteria, { global: false })
+                    .done(function (data) {
+                        vm.cards = data;
+                    })
+                    .fail(function (data) {
+                        vm.cards = [];
+                    });
+            }, 500),
+            viewCard: function (card) {
+                this.$router.push({ name: 'card-tiles', params: { id: card.cardID } });
+            }
+        }
+    });
+</script>

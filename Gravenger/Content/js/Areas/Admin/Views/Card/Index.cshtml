@@ -1,0 +1,31 @@
+﻿
+<div id="app" v-cloak>
+    <router-view></router-view>
+</div>
+
+@section Scripts{
+
+    @Html.Partial("VueComponents/CardList")
+    @Html.Partial("VueComponents/SearchBar")
+    @Html.Partial("VueComponents/AddCard")
+
+    <script type="text/javascript">
+        Vue.use(VeeValidate);
+
+        var routes = [
+            { path: "/", component: Vue.component('card-list'), name: 'home' },
+            { path: "/addcard", component: Vue.component('add-card'), name: 'addCard' },
+            //{ path: "/card/:id", component: Vue.component('card-details'), name: 'cardDetails' },
+            { path: "*", redirect: '/' }
+        ];
+
+        var router = new VueRouter({
+            routes: routes
+        });
+
+        var vm = new Vue({
+            el: "#app",
+            router: router
+        });
+    </script>
+}

@@ -1,0 +1,168 @@
+﻿
+@section Styles{
+<style>
+    .feed {
+        height: 600px;
+        border: none;
+        overflow: auto;
+    }
+
+        .feed::-webkit-scrollbar {
+            background-color: white;
+        }
+
+        .feed::-webkit-scrollbar-thumb {
+            background-color: #EFEFEF;
+            border-radius: 0px;
+        }
+
+    .feed-content {
+        margin-bottom: 10px;
+        height: 100px;
+        width: 300px;
+        border: 2px solid #7139A9;
+        color: black;
+        padding: 5px;
+    }
+
+    .image {
+        height: 300px;
+        width: 300px;
+    }
+
+    /*once style is finalized, move to stylebw.css*/
+</style>
+}
+
+<!-- HOME NEWSFEED -->
+<div class="menu">
+
+    <p>
+        Featured Postcard for <span id="datetime">{{message}}</span>: 
+        <br />
+        <a class="cardname" href="~/Content/html/cards/scavengerhunt04012018.html">Daily Scavenger Hunt</a>
+    </p>
+</div>
+<div id="feed" class="feed">
+    <div id="feed-test">
+        <div v-for="user in users">
+            {{user.name}}
+        </div>
+        <div v-for="event in events">
+            {{event}}
+        </div>
+    </div>
+
+
+    <div class="feed-content image">
+        If a user posts a photo on a tile, the photo will be displayed
+    </div>
+    <div class="feed-content image">
+        If a user publishes a Postcard, the Postcard will be displayed
+    </div>
+    <div class="feed-content text">
+        If a user posts a comment on a Postcard, the comment will be displayed
+    </div>
+    <div class="feed-content follow">
+        If a user follows another user, the follow will be displayed
+    </div>
+</div>
+
+<script type="text/javascript">
+    var feed = document.getElementById("feed");
+    feed.addEventListener("scroll", doThis);
+
+    function doThis() {
+        if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight) {
+            loadMore();
+        };
+    };
+
+    function loadMore() {
+        for (var i = 0; i < 5; i++) {
+            var content = document.createElement("div");
+            content.innerHTML = "photo or activity"; //need to set this up to get info from database
+            content.setAttribute("class", "feed-content"); //style
+            feed.appendChild(content);
+        };
+    };
+
+
+</script>
+<!-- END MAIN CONTENT -->
+
+@section Scripts{
+
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: '#datetime',
+            data: {
+                message: new Date().toLocaleDateString()
+            }
+        });
+
+        var users = '@Url.Content("~/api/accountList/")';
+        var vfeed = new Vue({
+            el: '#feed-test',
+            data: {
+                currentUser: '@Url.Content("~/api/account/" + User.Identity.GetAccountID())',
+                accountList: '@Url.Content("~/api/accountlist/")',
+                users: [],
+                events: '',
+                actionTextString: [
+                     ' followed ' ,
+                    { id: 2, action: ' unfollowed ' },
+                    { id: 3, action: ' added a postcard ' },
+                    { id: 4, action: ' liked a postcard ' }],
+            },
+
+            methods: {
+                loadAccountList: function () {
+                    var self = this;
+                    return $.get(self.accountList, function (data) {
+                        self.users = data;
+                        _.each(self.users, function (user) {
+                            user.name = user.username;
+                            user.id = user.accountID;
+                            user.apiUrl = '@Url.Content("~/api/account/")' + user.id;
+                            return $.get(user.apiUrl, function (info) {
+                                user.followees = info.followees;
+                                _.each(info.followees, function (followee) {
+                                    followee.name = followee.username;
+                                    // tried to get each instance of a User following another User to display as an "event"
+                                    // can't figure it out
+
+                                    self.events = user.name + self.actionTextString[0] + followee.name;
+                                })
+                            });
+                        });
+
+                    });
+                },
+            }
+        });
+        vfeed.consoleLog();
+        vfeed.loadAccountList();
+
+        $(document).ready(function () {
+
+            function ContentViewModel() {
+                var self = this;
+                self.followers = ko.observableArray();
+                self.firstName = ko.observable();
+                self.cards = ko.observableArray();
+                var profileApiUrl = "@Url.Content("~/api/account/" + User.Identity.GetAccountID())";
+                $.get(profileApiUrl, function (data) {
+                    self.followers(data.followers);
+                    self.firstName(data.firstName);
+                    self.cards(data.cards);
+                })
+            };
+
+            var model = new ContentViewModel();
+
+            ko.applyBindings(model);
+
+        });
+    </script>
+}

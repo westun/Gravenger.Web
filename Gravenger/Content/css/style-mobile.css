@@ -1,0 +1,460 @@
+﻿body {
+}
+@media screen and (max-device-width: 700px) {
+/* header items */
+    .dropdown-menu {
+        display: inline;
+        padding-top: 4px;
+    }
+    .dropdown-menu-wrapper {
+        display: none;
+        z-index: 5;
+        position: absolute;
+        width: 100vw;
+        left: 0;
+        top: 0;
+        background-color: rgba(120, 120, 120, 0.5);
+        height: 100%;
+
+    }
+    .dropdown-menu-caret:after {
+        display: inline;
+        content: '';
+        position: absolute;
+        top: 78px;
+        left: 11px;
+        border-bottom: 11px solid #FCFCFC;
+        border-left: 11px solid transparent;
+        border-right: 11px solid transparent;
+    }
+
+    .menu-toggle-button {
+        visibility: visible;
+        line-height: 1px;
+        color: white;
+    }
+
+    .lefthead {
+    }
+    .seenry-title {
+        display: inline-block;
+        color: white;
+        font-family: 'Didact Gothic', sans-serif;
+        margin-top: -6px;
+    }
+    .seenry-logo {
+        width: 30px;
+        display: none;
+    }
+
+    .righthead {
+        padding-top: 8px;
+    }
+    .notification-count {
+            color: #FFDF91;
+            font-weight: 500;
+    }
+
+   .banner {
+        grid-template-columns: 1fr 1fr 1fr;
+        height: auto;
+        width: 99vw;
+        padding-right: 10px;
+        margin-left: -10px;
+        background-color: #713A9E;
+        margin-bottom: 5px;
+        padding-bottom: 0px;
+    }
+
+.or {
+    padding: 0;
+    height: auto;
+}
+   
+.load-box {
+    padding: 10px 25px 50px 25px;
+    height: auto;
+}
+::-webkit-scrollbar {
+                background-color: inherit;
+                height: 10px;
+                width: 10px;
+
+            }
+::-webkit-scrollbar-thumb {
+                background-color: inherit;
+                border-radius: 0px;
+            }
+::-webkit-scrollbar-corner {
+    background-color: inherit;
+}
+
+:hover::-webkit-scrollbar-thumb {
+                background-color: #EFEFEF;
+            }
+
+
+    .main {
+        display: inline-block;
+    }
+    .rightbox {
+        display: none;
+    }
+    .leftbox {
+        z-index: 10;
+        position: absolute;
+        display: none;
+        background-color: #FCFCFC;
+        border: none;
+        top: 89px;
+        padding-left: 10px;
+        margin-left: -10px;
+    }
+    .leftbox p {
+
+    }
+    .midbox {
+        display: inline-block;
+        margin: 1%;
+        overflow-x: hidden;
+        height: 100%;
+        width: 100%;
+    }
+    .feed-content {
+        width: 100%;
+    }
+
+    /* CARD LAYOUT */
+    .cardbox {
+        width: 100vw;
+    }
+    .card-main {
+        width: 100vw;
+    }
+    .card-modal {
+        height: 100%;
+        position: fixed;
+    }
+    .card-modal-content {
+        margin-top: 0px;
+    }
+    .card-modal-content .basic-button {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .back-button-holder {
+        width: auto;
+        text-align: right;
+        margin-left: -10px;
+        height: 30px;
+    }
+    .back-button {
+        margin-right: 10px;
+    }
+    .card-main .space-bottom-40 {
+        padding: 0;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+    .card-main .space-bottom-20 {
+        margin-top: 0;
+    }
+    .card-holder {
+        width: 100vw;
+        display: grid;
+        grid-template: auto auto repeat(3, 31vw)/repeat(3, 31vw);
+    }
+    .card-holder-modal {
+        width: 100vw;
+        display: grid;
+        grid-template: repeat(3, 31vw)/repeat(3, 31vw);
+    }
+    .cardname {
+        grid-column: span 3;
+    }
+    .card-name {
+        grid-column: span 3;
+        font-size: 24px;
+        height: 30px;
+        padding-bottom: 4px;
+    }
+    .card-score-holder {
+        grid-column: span 3;
+        display: block;
+        height: auto;
+    }
+    .card-score-holder .basic-text {
+        font-size: 16px;
+    }
+    .label {
+        width: 31vw;
+        height: 31vw;
+        padding-top: 0%;
+    }
+    .labelled {
+        line-height: 100%;
+    }
+    .m-tile-cover-clear {
+        position: absolute;
+        width: 31vw;
+        height: 31vw;
+        opacity: 0;
+        z-index: 2;
+    }
+    .tile-container {
+        width: 31vw;
+        height: 31vw;
+        grid-column: span 1;
+        grid-row: span 1;
+        position: relative;
+        margin-top: 0;
+    }
+    .tile {
+        width: 100%;
+        height: 100%;
+    }
+    .v-a-margin-1px {
+        width: 1px;
+        height: 15vw;
+        display: inline-block;
+        margin:0;
+    }
+    .tile > img {
+        width: 100%;
+        height: 100%;
+    }
+    .editing-photo {
+        border: none;
+        grid-column: span 3; 
+        grid-row: span 3; 
+        position: absolute; 
+        z-index: 3;
+    }
+    .croppie-container {
+        width: 100vw !important;
+        height: 100vw !important;
+    }
+    .cr-boundary, .cr-viewport {
+        width: 100vw;
+        height: 100vw;
+        left: -17px; /*removes left margin while editing tile*/
+    }
+     .cr-vp-square {
+         width: 100% !important;
+         height: 100% !important;
+     }
+    .buttonbox {
+        top: 0px;
+        left: 0px;
+    }
+    .buttonbox-mobile {
+    margin-top: -45px;
+    margin-left: -17px;
+    text-align: right;
+    padding: 0;
+    width: 100vw;
+    position: absolute;
+    z-index: 2;
+    }
+    .buttonbox-mobile > .remove, .buttonbox-mobile > .done-button {
+        float: none;
+        background-color: rgba(116, 51, 142, .8);
+		border-radius: 3px;
+		border: 1px solid rgba(225, 225, 225, .8);
+		padding: 6px;
+		font-size: 20px;
+        margin-right: 6px;
+        position: relative;
+        bottom: 0;
+        right: 0;
+    }
+
+/*PROFILE LAYOUT*/
+.profile-head-container {
+    grid-template: 2fr 1fr / 3fr 4fr;
+    height: auto;
+}
+
+.profile-pic-box {
+    height: 30vw;
+    width: 40vw;
+    position: relative;
+}
+.profile-pic-box-editing {
+    position: fixed;
+    left: 17px;
+    top: 50px;
+}
+.editing-photo {
+    position: fixed;
+    left: 17px;
+    top: 50px;
+    z-index: 3;
+}
+.edit-photo-header {
+    top: 0;
+    left: 0;
+    position: fixed;
+    height: 40px;
+    width: 100%;
+    margin: 0;
+    display: inline;
+}
+.label-mobile-photo {
+    background-color: rgba(28, 26, 28, .6);
+    color: white;
+    margin-top: -25%;
+    display: block;
+}
+.profile-pic-box-editing .basic-button {
+    background-color: rgba(49, 45, 49, 1);
+    border: none;
+    margin: 0;
+    padding: 10px;
+    font-size: 20px;
+}
+.editing-photo .basic-button {
+    background-color: rgba(19, 15, 19, 1);
+    border: none;
+    margin: 0;
+    width: 50%;
+    padding: 10px;
+    font-size: 20px;
+}
+.editing-photo .cr-viewport {
+    border: none !important;
+}
+.profile-pic-box .tile-container {
+    border: none;
+}
+.profile-pic-box .cr-viewport {
+    border: none !important;
+}
+
+.profile-pic-button-box {
+    margin-top: -45px;
+    margin-left: -17px;
+    text-align: right;
+    padding: 0;
+    width: 100vw;
+    position: absolute;
+    z-index: 2;
+}
+.profile-pic-button-box > .basic-button {
+		background-color: rgba(116, 51, 142, .8);
+		border-radius: 3px;
+		border: 1px solid rgba(225, 225, 225, .8);
+		padding: 6px;
+		font-size: 20px;
+        margin-right: 6px;
+}
+.edit-photo-overlay {
+    position: absolute;
+    width: 100vw;
+    height: 220vw;
+    margin-left: -17px;
+    margin-top: -50px;
+    background-color: rgba(0, 0, 0, .9);
+}
+
+.followers-content {
+    display: none;
+}
+.following-content {
+    display: none;
+}
+
+.mobile-padding {
+    display: inline-block;
+    width: 100%;
+    height: 40px;
+}
+
+.user-cards {
+
+    display: grid;
+    grid-template-columns: repeat(1, 100%);
+    grid-template-rows: repeat(auto-fill, auto-fit);
+}
+
+.user-card-titles {
+    display: grid;
+    grid-column: 1;
+}
+
+.followers-modal {
+    grid-template-columns: 1fr;
+}
+    .modal-content {
+        top: 0px;
+        left: 0;
+        position: fixed;
+        grid-column-start: 0;
+        grid-column-end: 1;
+        width: 100vw;
+        height: 100vh;
+    }
+
+
+/*SOCIAL MOBILE*/
+.username {
+    font-size: 20px;
+}
+.user {
+    padding-bottom: 3px;
+}
+.profile-pic-icon {
+    height: 30px;
+    width: 30px;
+}
+.profile-dropdown-menu {
+    background-color: #713A9E;
+}
+.basic-button {
+    padding: 5px;
+}
+
+
+.board-container {
+    display: grid;
+    grid-template: repeat(6, 1fr) / repeat(2, 1fr);
+    grid-row-gap: 1ch;
+}
+
+.inner-board {
+    height:0px;
+}
+
+p.board-item {
+    display: none;
+}
+
+.modal-content .board-item {
+    background-color: white;
+    border: none;
+    max-width: 100%;
+}
+
+
+
+.card-back-button {
+    margin-top: 10px;
+}
+
+.card-list-container {
+    display: block !important;
+    height: auto;
+    margin-top: -28px;
+}
+
+.card-category-container {
+    height: auto !important;
+    width: 90%;
+
+}
+
+
+}
+
+

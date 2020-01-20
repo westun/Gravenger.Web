@@ -1,0 +1,49 @@
+﻿<script type="text/x-template" id="card-template">
+    <div class="card-main" id="cardframe-main">
+        <div class="card-holder" id="card-holder" v-bind:class="{ 'card-holder-modal': isModal }" >
+            <div class="tile-container" v-for="tile in card.tiles">
+                <label class="labelled" v-bind:class="{'label-static': !tile.imageFullPath}"> {{ tile.title }} </label>
+                <div class="tile">
+                    <img v-bind:src="tile.imageFullPath" v-if="tile.imageFullPath" />
+                </div>
+                <!-- TODO: how to determine if the current user has liked a tile? -->
+                <!-- TODO: Complete tile "like" functionality and make like account tile button a vue.js component -->
+                @*<span v-if="hasAccountTile(tile)">
+                    <button type="button"
+                            v-on:click="likeAccountTile(tile.accountTileID)">
+                        Like
+                    </button>
+                    <button type="button"
+                            v-on:click="unLikeAccountTile(tile.accountTileID)">
+                        Unlike
+                    </button>
+                </span>*@
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('card', {
+        template: '#card-template',
+        props: ['card', 'isModal'],
+        data: function () {
+            return {
+                tileService: new TileService({ rootUrl: "@Url.Content("~/")" }),
+            }
+        },
+        methods: {
+            likeAccountTile: function (accountTileID) {
+                this.tileService.likeAccountTile(accountTileID).then(function (data) {
+                });
+            },
+            unLikeAccountTile: function (accountTileID) {
+                this.tileService.unlikeAccountTile(accountTileID).then(function (data) {
+                });
+            },
+            hasAccountTile: function (tile) {
+                return tile.accountTileID > 0;
+            },
+        }
+    });
+</script>

@@ -1,0 +1,158 @@
+﻿<script type="text/x-template" id="card-tiles-template">
+    <div class="card-main">
+        <p class="space-bottom-20">
+            <router-link class="basic-button" v-bind:to="{ name: 'home' }">
+                View All Postcards
+            </router-link>
+            <button class="basic-button button-cancel" v-if="cardMappedToCurrentAccount" v-on:click="removePostcardFromAccount()">
+                Remove From My Postcards
+            </button>
+            <button class="basic-button" v-else v-on:click="addPostcardToAccount">
+                Add To My Postcards
+            </button>
+            <button class="basic-button card-back-button" v-on:click="goBack">
+                Back
+            </button>
+        </p>
+        <div class="card-holder">
+            <div class="card-name">
+                <span class="card-title">
+                    {{ card.title }}
+                </span>
+
+                <span class="card-completed-check" v-if="cardIsMarkedCompleted">
+                    <svg style="height:40px;width:40px;display:inline-block;">
+                        <path class="check" style="stroke-width:5;stroke:rgba(32, 234, 142, 1);" fill="none" d="M1 27 l8 7 16-16.1" />
+                    </svg>
+                </span>
+
+                <span class="card-users" v-on:click="openPostcardAccountsModal" style="cursor:pointer;">
+                    <span class="basic-number">{{ accountsThatHavePostcard.length }} Users</span>
+                </span>
+            </div>
+            <div class="card-score-holder">
+                <span class="card-score">
+                    <like-card v-bind:postcard="currentUsersPostcard"
+                               v-bind:can-like-card="false"
+                               v-bind:show-short-account-list="true">
+                    </like-card>
+                </span>
+            </div>
+            <template v-for="tile in card.tiles">
+                <tile v-bind:tile="tile" v-on:photo-uploaded="onTilePhotoUploaded"></tile>
+            </template>
+        </div>
+
+        <account-list-modal 
+            v-bind:accounts="accountsThatHavePostcard" 
+            @*override "id" attribute of "account-list-modal" component root html element. 
+                This will give the modal a unique id that can be targeted to open it. 
+                This is required when there are multiple "account-list-modal" components on one page. *@
+            id="cardusers-account-list-modal"> 
+        </account-list-modal>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('card-tiles', {
+        template: '#card-tiles-template',
+        data: function () {
+            return {
+                card: {},
+                cardID: this.$route.params.id,
+                accountService: new AccountService({ rootUrl: "@Url.Content("~/")" }),
+                cardService: new CardService({ rootUrl: "@Url.Content("~/")" }),
+                accountsThatHavePostcard: [],
+                currentAccountID: @User.Identity.GetAccountID(),
+            }
+        },
+        created: function () {
+            this.loadCard();
+            this.loadAccountsThatHavePostcard();
+        },
+        computed: {
+            cardMappedToCurrentAccount: function () {
+                return this.card && this.card.postcards && this.card.postcards.length > 0;
+            },
+            currentUsersPostcard: function () {
+                var vm = this;
+                return _.find(vm.card.postcards, function (postcard) {
+                    return postcard.accountID == vm.currentAccountID;
+                });
+            },
+            cardIsMarkedCompleted: function () {
+                var vm = this;
+                return _.find(vm.card.postcards, function (postcard) {
+                    return postcard.isMarkedCompleted;
+                });
+            }
+        },
+        watch: {
+            '$route': function (to, from) {
+                this.cardID = to.params.id;
+                this.loadCard();
+                this.loadAccountsThatHavePostcard();
+            }
+        },
+        methods: {
+            loadCard: function () {
+                var vm = this;
+                vm.cardService.get(vm.cardID).then(function (data) {
+                    vm.card = data;
+                });
+            },
+            loadAccountsThatHavePostcard: function () {
+                var vm = this;
+                vm.accountService.getAllByCardID(vm.cardID).then(function (data) {
+                    vm.accountsThatHavePostcard = data;
+                });
+            },
+            onTilePhotoUploaded: function () {
+                //only reload card and accounts that have postcards if current card doesn't have any postcards
+                //these api calls are made so that add/remove card button, user count, and user count list 
+                //if the current user hasn't added the card to their list:
+                //include the current user, when the add their first tile photo, to the card since this auto adds the card to their list
+                if (this.card.postcards && this.card.postcards.length == 0) {
+                    this.loadCard();
+                    this.loadAccountsThatHavePostcard();
+                }
+            },
+            addPostcardToAccount: function () {
+                var vm = this;
+                vm.cardService.addPostcard(vm.cardID).then(function (data) {
+                    vm.loadCard();
+                    vm.loadAccountsThatHavePostcard();
+                });
+            },
+            removePostcardFromAccount: function () {
+                var vm = this;
+                var remove = confirm("Removing this postcard from your list will also remove all photos and stamps for this postcard.  Are you sure you want to remove the postcard " + vm.card.title + "?");
+                if (!remove) {
+                    return;
+                }
+
+                vm.cardService.removePostcard(vm.cardID).then(function () {
+                    //this how it was handled when "mappedToCurrentAccount" computed property existed in "CardDTO"
+                    //vm.card.mappedToCurrentAccount = false;
+
+                    //_.each(vm.card.tiles, function (tile) {
+                    //    tile.imageFullPath = null;
+                        //TODO: "tile.editingPhoto" only exists in tile component.  Must set this property to false in each child tile component somehow
+                        //tile.editingPhoto = false;
+                    //});
+                    //
+
+                    //TODO: could remove postcard and tile image paths from card.postcards instead or re-loading card
+                    vm.loadCard();
+                    vm.loadAccountsThatHavePostcard();
+                });
+            },
+            goBack: function () {
+                window.history.back();
+            },
+            openPostcardAccountsModal: function () {
+                $('#cardusers-account-list-modal').gravengerModal('show');
+            }
+        }
+    });
+</script>

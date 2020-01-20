@@ -1,0 +1,52 @@
+﻿@model PermissionManagementVM
+
+<h2>Manage Account Permissions</h2>
+
+@if(Model.SelectedAccount == null)
+{
+    <hr />
+    <form method="get" autocomplete="off">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label for="@Html.IdFor(model => model.SelectedAccountID)">Select an account:</label>
+                    @Html.DropDownListFor(model => model.SelectedAccountID,
+                        new SelectListItem[] { new SelectListItem { Text = "" } }
+                           .Concat(Model.Accounts.Select(a => new SelectListItem
+                           {
+                               Text = a.FirstName + " " + a.LastName,
+                               Value = a.AccountID.ToString()
+                           })), new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Select Account</button>
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+@if(Model.SelectedAccount != null)
+{
+    <hr />
+    <form method="post" autocomplete="off">
+        <h3 class="mb-3">Selected account: @Model.SelectedAccount.FirstName @Model.SelectedAccount.LastName</h3>
+        <h4>Available Roles</h4>
+        <div>
+            @for (int i = 0; i < Model.Roles.Count(); i++)
+            {
+                @Html.HiddenFor(model => model.Roles[i].RoleID);
+                <div class="form-check">
+                    @Html.CheckBoxFor(model => model.Roles[i].Mapped, new { @class = "form-check-input" })
+                    <label class="form-check-label" for="defaultCheck1">
+                        @Model.Roles[i].Name
+                    </label>
+                </div>
+            }
+        </div>
+        <div class="mt-2">
+            <button type="submit" class="btn btn-primary btn-lg">Update Roles</button>
+            <a href="@Url.Action("ManageAccount")" class="btn btn-secondary btn-lg">Back To Account Selection</a>
+        </div>
+        @Html.AntiForgeryToken()
+    </form>
+}

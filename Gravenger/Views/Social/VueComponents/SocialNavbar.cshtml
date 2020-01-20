@@ -1,0 +1,16 @@
+﻿<script type="text/x-template" id="social-navbar-template">
+    <div class="butterbox" id="socialbar">
+        <a href="@Url.Action("index", "social")"><input type="button" class="submenu users" value="Find Users" /></a>
+        <a href="@Url.Action("boards", "social")"><input type="button" class="submenu boards" value="Boards" /></a>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('social-navbar', {
+        template: '#social-navbar-template',
+        data: function () {
+            return {
+            };
+        },
+    });
+</script>

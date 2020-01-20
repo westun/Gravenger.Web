@@ -1,0 +1,62 @@
+﻿
+@section Styles{
+    <link rel="stylesheet" href="@Url.Content("~/Content/css/croppie.css")" />
+    <style type="text/css">
+        /*
+            Some of these css styles exists in the stylebw.css file, but are using id selectors: e.g.: #menu
+            The id can only appear once on a page, and are meant to target a single html element.
+            The class is what is meant to target multiple elements.
+        */
+        .card-category-title {
+            grid-column: span 1fr;
+        }
+
+        .midcolumn {
+            width: 206px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+            .midcolumn div {
+                margin-bottom: 40px;
+            }
+
+
+        .card-list-container {
+            display: grid;
+            grid-column-gap: 5px;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .card-category-container {
+            height: 300px;
+            overflow: scroll;
+        }
+
+            .card-category-container::-webkit-scrollbar {
+                background-color: white;
+                width: 4px;
+            }
+
+            .card-category-container::-webkit-scrollbar-thumb {
+                background-color: #FFFFFF;
+                border-radius: 0px;
+            }
+
+            .card-category-container:hover::-webkit-scrollbar-thumb {
+                background-color: #EFEFEF;
+            }
+    </style>
+}
+
+<router-view></router-view>
+
+@section VueComponentLocalRegistration {
+    @Html.Partial("VueComponents/CardList")
+    @Html.Partial("VueComponents/CardTiles")
+    @Html.Partial("VueComponents/Tile")
+}
+
+@section Scripts{
+    <script type="text/javascript" src="@Url.Content("~/Content/js/croppie.js")"></script>
+}

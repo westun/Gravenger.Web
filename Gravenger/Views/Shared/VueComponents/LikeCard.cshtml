@@ -1,0 +1,197 @@
+﻿<script type="text/x-template" id="like-card-template">
+    <span>
+        <img v-bind:title="starImgTitle"
+             v-bind:style="starImgStyles"
+             v-bind:src="starImageUrl"
+             v-on:click="onStarClick" />
+        <span class="basic-number" title="likes" v-on:click="showUsersWhoLikedCard" style="cursor:pointer;">
+            {{ likes }}
+        </span>
+        
+        <like-card-short-account-list 
+            v-if="showShortAccountList"
+            v-bind:accounts="accountsThatHaveLikedPostcard"
+            v-on:like-card-short-account-list-clicked="showUsersWhoLikedCard">
+        </like-card-short-account-list>
+
+        <account-list-modal 
+            v-bind:accounts="accountsThatHaveLikedPostcard"
+            v-bind:id="accountListModalID">
+        </account-list-modal>
+    </span>
+</script>
+
+<script type="text/javascript">
+    Vue.component('like-card', {
+        template: '#like-card-template',
+        props: {
+            postcard: Object,
+            canLikeCard: Boolean,
+            showAccountsOnClickOnly: Boolean,
+            showShortAccountList: Boolean,
+            //TODO: consider passing likes, postcardID, isSelected (and any other properties) as props
+            //cardIsLiked: Boolean, or isSelected: Boolean
+            //likes: Number,
+            //postcardID: Number,
+        },
+        data: function () {
+            return {
+                imageUrls: {
+                    noStar: "@Url.Content("~/Content/img/icons/no-star.png")",
+                    star: "@Url.Content("~/Content/img/icons/star.png")",
+                },
+                accountService: new AccountService({ rootUrl: "@Url.Content("~/")" }),
+                cardService: new CardService({ rootUrl: "@Url.Content("~/")" }),
+                likes: this.postcard ? this.postcard.likes : 0,
+                isLikedByCurrentUser: this.postcard ? this.postcard.isLikedByCurrentUser : false,
+                postcardID: this.postcard ? this.postcard.postcardID : 0,
+                accountsThatHaveLikedPostcard: null,
+                //generate a uniqueID for each like component which is originally intended to create unique id for the 
+                //root html element for the account list modal component so that the modal can be targeted by id and always be unique
+                uniqueID: Math.random().toString(36).substr(2, 9), 
+            };
+        },
+        created: function () {
+            if (!this.showAccountsOnClickOnly && this.postcardID > 0) {
+                this.loadAccountsThatLikePostcard();
+            }
+        },
+        computed: {
+            fillStar: function () {
+                return (!this.canLikeCard && this.likes > 0) || this.isLikedByCurrentUser;
+            },
+            starImageUrl: function () {
+                if (this.fillStar) {
+                    return this.imageUrls.star;
+                }
+                else {
+                    return this.imageUrls.noStar;
+                }
+            },
+            starImgTitle: function () {
+                var title;
+                if (!this.canLikeCard) {
+                    title = "Stamps";
+                }
+                else if (!this.isLikedByCurrentUser) {
+                    title = "Stamp this postcard";
+                }
+                else {
+                    title = "Unstamp this postcard";
+                }
+
+                return title;
+            },
+            starImgStyles: function () {
+                if (!this.canLikeCard) {
+                    return {};
+                }
+
+                return {
+                    cursor: 'pointer'
+                };
+            },
+            accountListModalID: function () {
+                if (this.postcardID > 0) {
+                    return "account-list-modal-" + this.postcardID + "-" + this.uniqueID;
+                }
+
+                return "account-list-modal" + "-" + this.uniqueID;
+            },
+        },
+        watch: {
+            postcard: function (newValue, oldValue) {
+                var postcard = newValue;
+
+                if (!postcard) {
+                    this.setPostcardDefaults();
+                    return;
+                }
+
+                this.likes = postcard.likes;
+                this.isLikedByCurrentUser = postcard.isLikedByCurrentUser;
+                this.postcardID = postcard.postcardID;
+                
+                if (this.showAccountsOnClickOnly) {
+                    this.accountsThatHaveLikedPostcard = null;
+                }
+                else if (postcard.postcardID > 0) {
+                    this.loadAccountsThatLikePostcard();
+                }
+            }
+        },
+        methods: {
+            loadAccountsThatLikePostcard: function () {
+                var vm = this;
+                return vm.getAccountsThatLikePostcard().then(function (data) {
+                    vm.accountsThatHaveLikedPostcard = data;
+                });
+            },
+            getAccountsThatLikePostcard: function () {
+                return this.accountService.getAllThatLikePostcard(this.postcardID);
+            },
+            setPostcardDefaults: function () {
+                this.likes = 0;
+                this.isLikedByCurrentUser = false;
+                this.postcardID = 0;
+                this.accountsThatHaveLikedPostcard = null;
+            },
+            onStarClick: function () {
+                var vm = this;
+
+                if (!vm.canLikeCard) {
+                    return;
+                }
+
+                if (vm.isLikedByCurrentUser) {
+                    vm.unlikeCard();
+                }
+                else {
+                    vm.likeCard();
+                }
+            },
+            likeCard: function () {
+                var vm = this;
+
+                vm.cardService.likePostcard(vm.postcardID).then(function (data) {
+                    vm.isLikedByCurrentUser = true;
+                    vm.likes++;
+                    vm.loadAccountsThatLikePostcard();
+                    vm.$emit('card-liked');
+                });
+            },
+            unlikeCard: function () {
+                var vm = this;
+
+                vm.cardService.unlikePostcard(vm.postcardID).then(function (data) {
+                    vm.isLikedByCurrentUser = false;
+                    vm.likes--;
+                    vm.loadAccountsThatLikePostcard();
+                    vm.$emit('card-unliked');
+                });
+            },
+            showUsersWhoLikedCard: function () {
+                var vm = this;
+
+                if (vm.likes <= 0) {
+                    return;
+                }
+
+                if (vm.accountsThatHaveLikedPostcard != null) {
+                    vm.showUserWhoLikedCardModal();
+                    return;
+                }
+
+                vm.loadAccountsThatLikePostcard().then(vm.showUserWhoLikedCardModal);
+            },
+            showUserWhoLikedCardModal: function () {
+                var vm = this;
+                if (vm.accountsThatHaveLikedPostcard.length <= 0) {
+                    return;
+                }
+
+                $('#' + vm.accountListModalID).gravengerModal('show');
+            },
+        }
+    });
+</script>

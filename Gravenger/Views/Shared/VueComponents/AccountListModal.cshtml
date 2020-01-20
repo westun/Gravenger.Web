@@ -1,0 +1,87 @@
+﻿<script type="text/x-template" id="account-list-modal-template">
+    <div class="account-list-modal" id="account-list-modal">
+        <div class="account-list-modal-content">
+            <span class="menu">
+                Users
+                <span class="modal-close-button">
+                    X
+                </span>
+            </span>
+            <div class="account-list-main">
+                <div v-for="account in accounts">
+                    <profile-photo-icon-link 
+                        v-bind:username="account.username" 
+                        v-bind:profile-image-url="account.profileImageFullPath">
+                    </profile-photo-icon-link>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('account-list-modal', {
+        template: '#account-list-modal-template',
+        props: {
+            accounts: Array
+        }
+    });
+</script>
+
+<style type="text/css">
+    .account-list-modal {
+        display: none;
+        z-index: 5;
+        position: absolute;
+        width: 100%;
+        left: 0;
+        top: 0;
+        background-color: rgba(120, 120, 120, 0.5);
+        
+        /*added height: 100%; because when user list contains only, for example, two users, the modal doesn't cover much of the screen.  Change these styles however you want and remove this comment.  - Wes*/
+        height: 100%;
+    }
+
+        .account-list-modal .menu {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+            .account-list-modal .menu .modal-close-button {
+                padding-right: 5px;
+            }
+
+    .account-list-modal-content {
+        margin: auto;
+        vertical-align: middle;
+        margin-top: 110px;
+        width: 780px;
+        background-color: white;
+        display: grid;
+    }
+
+    .account-list-main {
+        font-size: 26px;
+        font-family: 'Open Sans', sans-serif;
+        margin: 5px;
+        width: 780px;
+        display: inline-block;
+    }
+
+        .account-list-main::-webkit-scrollbar {
+            display: none;
+        }
+
+    @@media screen and (max-device-width: 700px) {
+        .account-list-main {
+            width: 100vw;
+        }
+        account-list-modal {
+            height: 100%;
+        }
+
+        account-list-modal-content {
+            margin-top: 0px;
+        }
+    }
+</style>

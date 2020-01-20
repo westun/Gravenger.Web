@@ -1,0 +1,104 @@
+﻿
+<script type="text/x-template" id="top-header-template">
+    <div>
+        <div class="space-bottom-20" style="width:100%; text-align:right">
+            <a v-bind:href="urls.logout">Sign Out</a>
+            <span v-if="userIsAdmin">|</span>
+            <a v-bind:href="urls.admin" v-if="userIsAdmin">Go To Admin</a>
+        </div>
+        <div class="dropdown-menu-wrapper" id="dropdown-menu-wrapper" v-on:click="hideMobileLeftNavMenu">
+            <span class="dropdown-menu-caret"></span>
+        </div>
+        <div class="banner">
+            <div class="dropdown-menu">
+                <span class="menu-toggle-button" id="dropdown-button" v-on:click="showMobileLeftNavMenu">_<br />_<br />_</span>
+            </div>
+            <div class="lefthead">
+                <span class="site-title">
+                    <center>
+                        <a v-bind:href="urls.home"><img class="seenry-logo" v-bind:src="imageUrls.siteBanner" alt="SEENRY"><span class="seenry-title">Seenry</span></a>
+                    </center>
+                </span>
+            </div>
+            <div class="righthead">
+                <div class="user-notification box">
+                    <img v-bind:src="imageUrls.bellIcon"
+                         id="user-notification-icon"
+                         class="profile-pic-icon"
+                         v-on:click="openNotifications"
+                         style="cursor:pointer;">
+                    <span id="notification-count" class="notification-count"></span>
+                </div>
+                <div class="user-profile box">
+                    <div id="profile-modal-container">
+                        <button class="profile-dropdown-menu" id="profile-dropdown-button" v-on:click="loadProfileModal">
+                            <img v-bind:src="currentProfileImagePath" class="profile-pic-icon" />
+                            <a v-bind:href="urls.profile" id="profile-pic-icon-profile-link"></a>
+                        </button>
+                    </div>
+                    <profile-modal id="profile-modal"></profile-modal>
+                </div>
+            </div>
+        </div>
+        <notifications v-bind:isVisible="notificationsVisible"
+                       v-on:notifications-modal-closed="onNotificationsModalClosed">
+        </notifications>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('top-header', {
+        template: '#top-header-template',
+        data: function () {
+            return {
+                urls: {
+                    home: "@Url.Content("~/")",
+                    admin: "@Url.Content("~/admin")",
+                    logout: "@Url.Content("~/account/logout")",
+                    profile: "@Url.Content("~/profile")",
+                },
+                imageUrls: {
+                    bellIcon: "@Url.Content("~/Content/img/icons/bellicon.png")",
+                    siteBanner: "@Url.Content("~/Content/img/seenry-title-1.PNG")",
+                    defaultProfileIcon: "@Url.Content("~/Content/img/icons/iconprof.png")"
+                },
+                notificationsVisible: false,
+                userIsAdmin: @User.IsInRole("Admin").ToString().ToLower(),
+            };
+        },
+        computed: {
+            currentProfileImagePath: function () {
+                return this.$root.currentProfile.profileImageFullPath || this.imageUrls.defaultProfileIcon;
+            },
+        },
+        methods: {
+            loadProfileModal: function () {
+                if (window.matchMedia("(max-width: 700px)").matches) {
+                    $('#profile-modal').gravengerModal('show');
+                }
+                else {
+                    document.getElementById("profile-pic-icon-profile-link").click();
+                }
+            },
+            showMobileLeftNavMenu: function () {
+                var leftbar = document.getElementsByClassName("leftbox");
+                var dropWrapper = document.getElementById("dropdown-menu-wrapper");
+                leftbar[0].style.display = "inline-block";
+                dropWrapper.style.display = "inline-block";
+            },
+            hideMobileLeftNavMenu: function () {
+                var leftbar = document.getElementsByClassName("leftbox");
+                var dropWrapper = document.getElementById("dropdown-menu-wrapper");
+                leftbar[0].style.display = "none";
+                dropWrapper.style.display = "none"
+            },
+            openNotifications: function () {
+                this.notificationsVisible = true;
+            },
+            onNotificationsModalClosed: function () {
+                this.notificationsVisible = false;
+                $('#notification-count').text('');
+            },
+        }
+    });
+</script>

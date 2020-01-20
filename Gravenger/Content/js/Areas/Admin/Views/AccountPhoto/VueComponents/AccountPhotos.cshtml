@@ -1,0 +1,134 @@
+﻿<script type="text/x-template" id="account-photos-template">
+    <div v-cloak>
+        <div class="mb-3">
+            <router-link v-bind:to="{ name: 'home' }">
+                <a class="btn btn-primary btn-lg" href="#">Return To Account List</a>
+            </router-link>
+        </div>
+        <h1>Photos for: <img class="profile-pic-icon" v-bind:src="account.profileImageFullPath" /> {{ account.username }}</h1>
+        <div class="row mb-5">
+            <template v-for="postcard in account.postcards">
+                <div class="col-sm-3 mb-5" v-for="tile in postcard.tiles" v-bind:key="tile.tileID" v-if="tile.imageFullPath">
+                    <img v-bind:src="tile.imageFullPath" />
+                    <div>
+                        <strong>Card:</strong> {{ postcard.title }}
+                    </div> 
+                    <div>
+                        <strong>Tile:</strong> {{ tile.title }}
+                    </div>
+                    <button type="button" class="btn btn-primary btn-lg" v-on:click="removePhoto(tile)">Remove</button>
+                </div>
+            </template>
+        </div>
+        <div id="confirmRemovePhotoModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Remove Photo</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to remove the photo for: <strong>{{ tileToRemove.title }}</strong>?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" v-on:click="confirmRemovePhoto">Remove</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('account-photos', {
+        template: '#account-photos-template',
+        data: function () {
+            return {
+                apiUrls: {
+                    getAccount: "@Url.Content("~/api/account/")",
+                    photo: "@Url.Content("~/api/adminphoto")",
+                    accountTile: "@Url.Content("~/api/adminaccounttile")"
+                },
+                imageUrls: {
+                    defaultProfile: "@Url.Content("~/Content/img/icons/iconprof.png")"
+                },
+                account: {},
+                accountID: this.$route.params.id,
+                tileToRemove: {}
+            };
+        },
+        created: function () {
+            this.loadAccount();
+        },
+        watch: {
+            '$route': function (to, from) {
+                this.accountID = to.params.id;
+                this.loadAccount();
+            }
+        },
+        methods: {
+            loadAccount: function () {
+                var vm = this;
+                return $.get(vm.apiUrls.getAccount + vm.accountID, function (data) {
+                    data.profileImageFullPath = data.profileImageFullPath || vm.imageUrls.defaultProfile;
+                    vm.account = data;
+                });
+            },
+            removePhoto: function (tile) {
+                var vm = this;
+                vm.tileToRemove = tile;
+                $('#confirmRemovePhotoModal').modal('show');
+            },
+            confirmRemovePhoto: function () {
+                var vm = this;
+                if (!vm.tileToRemove) {
+                    return;
+                }
+
+                var fileName = vm.tileToRemove.imageFileName;
+                $.when(vm.deletePhoto(fileName)).then(function (data) {
+                    vm.tileToRemove.imageFullPath = null;
+                    vm.tileToRemove.imageFileName = null;
+                    $.when(vm.deleteAccountTile(vm.tileToRemove)).then(function (data) {
+                        $('#confirmRemovePhotoModal').modal('hide');
+                    });
+                });
+            },
+            deletePhoto: function (fileName) {
+                var vm = this;
+                var def = $.Deferred();
+                $.ajax({
+                    url: vm.apiUrls.photo,
+                    type: 'DELETE',
+                    data: { fileName: fileName },
+                    success: function (data) {
+                        def.resolve(data);
+                    },
+                    error: function (data) {
+                        def.reject(data);
+                    }
+                });
+                return def.promise();
+            },
+            deleteAccountTile: function (tile) {
+                var vm = this;
+                var def = $.Deferred();
+                $.ajax({
+                    url: vm.apiUrls.accountTile,
+                    type: 'DELETE',
+                    data: { tileID: tile.tileID, accountID: vm.accountID },
+                    success: function (data) {
+                        def.resolve(data);
+                    },
+                    error: function (data) {
+                        def.reject(data);
+                    }
+                });
+                return def.promise();
+            }
+        }
+    });
+</script>

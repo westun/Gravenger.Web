@@ -1,0 +1,21 @@
+﻿@model AccountVerifyResetVM
+
+@{ Layout = "~/Views/_accountLayout.cshtml"; }
+
+<div class="load-box">
+    <h1>Reset Your Password</h1>
+
+    @Html.Partial("Partials/Alerts")
+
+    <form method="post" autocomplete="off">
+        <div class="space-top-20">
+            @Html.LabelFor(model => model.Password)
+            @Html.TextBoxFor(model => model.Password, new { @type = "password" })
+            <div>
+                @Html.ValidationMessageFor(model => model.Password)
+            </div>
+        </div>
+        <button type="submit" class="basic-button">Submit</button>
+        @Html.AntiForgeryToken()
+    </form>
+</div>

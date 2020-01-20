@@ -1,0 +1,128 @@
+﻿<script type="text/x-template" id="profile-modal-template">
+    <div class="profile-modal" id="profile-modal">
+        <div class="profile-modal-content">
+            <span class="profile-modal-caret"></span>
+            <span class="menu">
+                <a href="@Url.Content("~/Profile")">
+                    {{ username }}
+                </a>
+            </span>
+            <user-card-list v-bind:cards="postcards"
+                            v-on:card-list-link-clicked="closeModal">
+            </user-card-list>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('profile-modal', {
+        template: '#profile-modal-template',
+
+        data: function () {
+            return {
+                currentAccountID: @User.Identity.GetAccountID(),
+                accountUrl: '@Url.Content("~/api/account/")',
+                username: null,
+                postcards: [],
+            }
+        },
+        created: function() {
+            this.getProfile();
+        },
+        methods: {
+            getProfile: function() {
+                var self = this;
+                var currentAccountUrl = self.accountUrl + self.currentAccountID;
+                return $.get(currentAccountUrl, function(data) {
+                    self.username = data.username;
+                    self.postcards = data.postcards;
+                })
+            },
+            closeModal: function () {
+                $('#profile-modal').gravengerModal('close');
+            },
+        }
+    });
+</script>
+
+<style type="text/css">
+    .profile-modal {
+        display: none;
+        z-index: 5;
+        position: absolute;
+        width: 100vw;
+        left: 0;
+        top: 0;
+        background-color: rgba(120, 120, 120, 0.5);
+        height: 100%;
+    }
+
+        .profile-modal .menu {
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 3px;
+            display: block;
+        }
+
+            .profile-modal .menu .modal-close-button {
+                padding-right: 5px;
+            }
+
+    .profile-modal-content {
+        margin: auto;
+        vertical-align: middle;
+        margin-top: 89px;
+        float: right;
+        width: 60vw;
+        color: black;
+        background-color: white;
+        max-height: 100%;
+    }
+
+    .profile-modal-caret:after {
+          content: '';
+          position: absolute;
+          top: 78px;
+          right: 11px;
+          border-bottom: 11px solid white;
+          border-left: 11px solid transparent;
+          border-right: 11px solid transparent;
+    }
+    .profile-modal-content .mycards {
+        border: none;
+        border-top: 1px solid #EFEFEF;
+        padding-top: 10px;
+        overflow-y: scroll;
+    }
+    .profile-modal-content .mycards-header {
+        display: none;
+    }
+    .profile-main {
+        font-size: 32px;
+        font-family: 'Open Sans', sans-serif;
+        margin: 5px;
+        width: 100%;
+        display: inline-block;
+    }
+
+        .profile-main::-webkit-scrollbar {
+            display: none;
+        }
+
+    @@media screen and (max-device-width: 700px) {
+        .profile-main {
+            width: 100vw;
+        }
+
+        profile-modal {
+            height: 100%;
+        }
+
+        profile-modal-content {
+            margin-top: 0px;
+            width: auto;
+        }
+    }
+</style>
+
+

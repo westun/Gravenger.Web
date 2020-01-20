@@ -1,0 +1,294 @@
+﻿<script type="text/x-template" id="add-card-template">
+    <div>
+        <router-link class="btn btn-primary btn-lg mb-3" v-bind:to="{ name: 'home' }">Return To Postcard List</router-link>
+        <h2 class="mb-3">{{ headerText }}</h2>
+        <div class="alert alert-success" v-show="successMessage" role="alert">
+            {{ successMessage }}
+        </div>
+        <div class="alert alert-danger" v-show="errorMessage" role="alert">
+            {{ errorMessage }}
+        </div>
+        <div class="form-group form-inline">
+            <label class="control-label" for="card-title">Name:&nbsp;</label>
+            <input type="text"
+                   class="form-control"
+                   name="card-title"
+                   v-model="card.title"
+                   v-bind:class="{ 'is-danger': errors.has('card-title') }"
+                   v-validate="'required'"
+                   v-bind:disabled="isEditing" />
+            <span class="help is-danger" v-show="errors.has('card-title')">&nbsp;Required</span>
+        </div>
+        <div class="form-group form-inline">
+            <label class="control-label">Category:&nbsp;</label>
+            <select class="form-control" v-model="card.category">
+                <option></option>
+                <option v-for="category in categories">{{ category }}</option>
+            </select>
+            <button class="btn btn-primary ml-2" data-toggle="modal" data-target="#addNewCategoryModal">
+                Add New Category
+            </button>
+        </div>
+        <div class="row">
+            <div class="col-sm-4" v-for="tile in card.tiles" v-bind:key="tile.position">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <p class="card-text">
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Enter tile name"
+                                   v-model="tile.title"
+                                   v-bind:name="'tile-title-' + tile.position"
+                                   v-bind:class="{ 'is-danger': errors.has('tile-title-' + tile.position) }"
+                                   v-validate="'required'" />
+                        </p>
+                        <span class="help is-danger" v-show="errors.has('tile-title-' + tile.position)">Required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group form-inline mt-3">
+            <label class="control-label">Tags:&nbsp;</label>
+            <input type="text"
+                   class="form-control col-sm-4"
+                   v-model="tagsText"
+                   placeholder="separate tags with commas"
+                   v-on:keyup.enter="publishCard" />
+            &nbsp;<span class="badge badge-pill badge-secondary badge-tag mr-1" v-for="tag in tagsTextToObjectArray">{{ tag.name }}</span>
+        </div>
+        <div class="mb-3">
+            <button class="btn btn-primary btn-lg" v-on:click="publishCard" v-on:keyUp.enter="publishCard">Publish</button>
+            <router-link class="btn btn-secondary btn-lg"
+                         v-if="isEditing"
+                         v-bind:to="{ name: 'home' }">
+                Exit
+            </router-link>
+        </div>
+
+        <div id="confirmUpdateCardModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update postcard <strong>{{ card.title }}</strong></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to update the postcard <strong>{{ card.title }}</strong>?</p>
+                        <div class="alert alert-danger">
+                            <strong>Warning:</strong> There may already be users who have uploaded
+                            photos for the postcard <strong>{{ card.title }}</strong>.
+                            Changing the name of a tile could cause existing photos to be inaccurate.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" v-on:click="updateCard">Update</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="addNewCategoryModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Category</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group form-inline">
+                            <label class="control-label" for="new-category-name">New Category Name:&nbsp;</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="new-category-name"
+                                   v-model="newCategoryName" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" v-on:click="addNewCategory">Add</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('add-card', {
+        template: '#add-card-template',
+        data: function () {
+            return {
+                cardApiUrl: '@Url.Content("~/api/admin/cards/")',
+                categoriesApiUrl: '@Url.Content("~/api/admin/categories")',
+                card: this.getBlankCard(),
+                categories: [],
+                tagsText: '',
+                successMessage: '',
+                errorMessage: '',
+                cardID: this.$route.params.id,
+                newCategoryName: '',
+            };
+        },
+        created: function () {
+            this.loadCategories();
+
+            if (this.isEditing) {
+                this.loadCard();
+            }
+        },
+        computed: {
+            tagsTextToObjectArray: function () {
+                return this.tagsText.split(',').map(function (tag) {
+                    return { name: tag.trim() };
+                });
+            },
+            headerText: function () {
+                return this.isEditing ? "Edit Postcard" : "Add New Postcard";
+            },
+            isEditing: function () {
+                return this.cardID && this.cardID > 0;
+            },
+        },
+        watch: {
+            '$route': function (to, from) {
+                this.cardID = to.params.id;
+
+                if (this.isEditing) {
+                    this.loadCard();
+                }
+            }
+        },
+        methods: {
+            loadCard: function () {
+                var vm = this;
+                $.get(vm.cardApiUrl + this.cardID).then(function (data) {
+                    vm.card = data;
+                    vm.tagsText = _.map(data.tags, function (tag) {
+                        return tag.name;
+                    }).join(',');
+                });
+            },
+            loadCategories: function () {
+                var vm = this;
+                $.get(vm.categoriesApiUrl, function (data) {
+                    vm.categories = data;
+                });
+            },
+            publishCard: function () {
+                this.card.tags = this.tagsTextToObjectArray;
+                
+                var vm = this;
+                this.validateForm().then(function (isValid) {
+                    if (!isValid) {
+                        return;
+                    }
+
+                    if (vm.isEditing) {
+                        $('#confirmUpdateCardModal').modal('show');
+                    }
+                    else {
+                        vm.addCard();
+                    }
+                });
+            },
+            addCard: function () {
+                var vm = this;
+                $.post(vm.cardApiUrl, vm.card).done(function (data) {
+                    vm.successMessage = 'Card "' + vm.card.title + '" was published successfully.';
+                    vm.clearCard();
+                    vm.clearErrors();
+                });
+            },
+            updateCard: function () {
+                var vm = this;
+                $.ajax({
+                    url: vm.cardApiUrl,
+                    data: vm.card,
+                    type: 'PUT',
+                    success: function (data) {
+                        vm.successMessage = 'Card "' + vm.card.title + '" was updated successfully.';
+                        vm.clearErrors();
+                        $('#confirmUpdateCardModal').modal('hide');
+                    },
+                    error: function (data) {
+                        //TODO: handle errors
+                    }
+                });
+            },
+            getBlankCard: function () {
+                return {
+                    cardID: null,
+                    title: null,
+                    category: '',
+                    tiles: _.chain(_.range(1, 10))
+                        .map(function (position) {
+                            return {
+                                title: null,
+                                position: position
+                            }
+                        })
+                        .value(),
+                    tags: []
+                };
+            },
+            clearCard: function () {
+                this.card = this.getBlankCard();
+                this.tagsText = '';
+            },
+            clearErrors: function () {
+                var vm = this;
+                Vue.nextTick().then(function () {
+                    vm.errors.clear();
+                });
+            },
+            validateForm: function () {
+                return this.$validator.validateAll();
+            },
+            addNewCategory: function () {
+                var vm = this;
+                if (!vm.newCategoryName) {
+                    //TODO: use v-validate 'reqiored' validation, or display error message
+                    $('#addNewCategoryModal').modal('hide');
+                    return;
+                }
+
+                var categoryAlreadyExists = _.some(vm.categories, function (category) {
+                    return vm.newCategoryName === category
+                });
+
+                if (categoryAlreadyExists) {
+                    vm.errorMessage = 'Category "' + vm.newCategoryName + '" already exists.';
+                    vm.newCategoryName = '';
+                    $('#addNewCategoryModal').modal('hide');
+                    return;
+                }
+
+                var categoryDTO = { title: vm.newCategoryName }
+
+                $.post(vm.categoriesApiUrl, categoryDTO).done(function (data) {
+                    vm.successMessage = 'Category "' + vm.newCategoryName + '" was added successfully.';
+                    vm.newCategoryName = '';
+                    $('#addNewCategoryModal').modal('hide');
+                    vm.categories.push(categoryDTO.title);
+                });
+            },
+        }
+    });
+</script>
+
+<style type="text/css">
+    span.badge-tag {
+        font-size: 20px;
+    }
+    .help.is-danger {
+        color: #ff3860;
+    }
+    .is-danger {
+        border-color: #ff3860;
+    }
+</style>

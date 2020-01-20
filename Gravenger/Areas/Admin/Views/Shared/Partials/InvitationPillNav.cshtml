@@ -1,0 +1,22 @@
+﻿<style>
+    #invitation-nav.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        border-color: #62228A;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    #invitation-nav.nav-pills .nav-link.default {
+        border-color: black;
+        border-width: 1px;
+        border-style: solid;
+        color: black;
+    }
+</style>
+
+<ul id="invitation-nav" class="nav nav-pills nav-justified mb-3" v-cloak>
+    <li class="nav-item" v-for="navItem in navItems">
+        <a class="nav-link" v-bind:href="navItem.url" v-bind:class="{ active: navItem.active, default: !navItem.active }" >
+            {{ navItem.text }}
+        </a>
+    </li>
+</ul>

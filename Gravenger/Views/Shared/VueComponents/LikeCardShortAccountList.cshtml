@@ -1,0 +1,55 @@
+﻿<script type="text/x-template" id="like-card-short-account-list-template">
+    @* v-on:click.stop is used to stopPropagation(), which will result in the account list modal no longer opening
+        when a username is clicked from the short list to view their profile.  https://vuejs.org/v2/guide/events.html#Event-Modifiers *@
+    <span class="basic-text" v-if="accounts && accountsCount > 0" v-on:click="onLikeCardShortAccountListClicked" style="cursor:pointer;">
+        <span v-if="accountsCount == 1">
+            <a v-bind:href="getProfileUrl(accounts[0].username)" v-on:click.stop>
+                {{ accounts[0].username }}
+            </a>
+            stamped this postcard
+        </span>
+        <span v-if="accountsCount == 2">
+            <a v-bind:href="getProfileUrl(accounts[0].username)" v-on:click.stop>
+                {{ accounts[0].username }}
+            </a>
+            and
+            <a v-bind:href="getProfileUrl(accounts[1].username)" v-on:click.stop>
+                {{ accounts[1].username }}
+            </a>
+            stamped this postcard
+        </span>
+        <span v-if="accountsCount >= 3">
+            <a v-bind:href="getProfileUrl(accounts[0].username)" v-on:click.stop>{{ accounts[0].username }}</a>,
+            <a v-bind:href="getProfileUrl(accounts[1].username)" v-on:click.stop>{{ accounts[1].username }},</a>
+            and {{ accounts.length - 2 }} other(s)
+            stamped this postcard
+        </span>
+    </span>
+</script>
+
+<script type="text/javascript">
+    Vue.component('like-card-short-account-list', {
+        template: '#like-card-short-account-list-template',
+        props: {
+            accounts: Array
+        },
+        data: function () {
+            return {
+                viewProfileUrl: "@Url.Content("~/profile/display/")",
+            }
+        },
+        computed: {
+            accountsCount: function () {
+                return this.accounts.length;
+            }
+        },
+        methods: {
+            onLikeCardShortAccountListClicked: function () {
+                this.$emit('like-card-short-account-list-clicked');
+            },
+            getProfileUrl: function (username) {
+                return this.viewProfileUrl + username;
+            },
+        }
+    });
+</script>

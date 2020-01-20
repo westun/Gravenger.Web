@@ -1,0 +1,43 @@
+﻿<script type="text/x-template" id="account-list-template">
+    <div v-cloak>
+        <div v-for="account in accounts">
+            <img class="profile-pic-icon" v-bind:src="account.profilePicUrl" />
+            <router-link class="username" v-bind:to="{ name: 'photos', params: { id: account.accountID } }">
+                {{ account.name }}
+            </router-link>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/javascript">
+    Vue.component('account-list', {
+        template: '#account-list-template',
+        data: function () {
+            return {
+                apiUrls: {
+                    accountList: "@Url.Content("~/api/accountlist")",
+                },
+                imageUrls: {
+                    defaultProfile: "@Url.Content("~/Content/img/icons/iconprof.png")"
+                },
+                accounts: null
+            };
+        },
+        created: function () {
+            var vm = this;
+            vm.loadAccountList();
+        },
+        methods: {
+            loadAccountList: function () {
+                var self = this;
+                return $.get(self.apiUrls.accountList, function (data) {
+                    self.accounts = data;
+                    _.each(self.accounts, function (account) {
+                        account.profilePicUrl = account.profileImageFullPath || self.imageUrls.defaultProfile;
+                    });
+                });
+            },
+        }
+    });
+</script>

@@ -1,0 +1,31 @@
+﻿<script type="text/x-template" id="profile-photo-icon-link-template">
+    <a v-bind:href="profileUrl">
+        <img class="profile-pic-icon" v-bind:src="profileImageUrlOrDefault" />
+        <strong>{{ username }}</strong>
+    </a>
+</script>
+
+<script type="text/javascript">
+    Vue.component('profile-photo-icon-link', {
+        template: '#profile-photo-icon-link-template',
+        props: ['username', 'profileImageUrl'],
+        data: function () {
+            return {
+                imageUrls: {
+                    defaultProfile: "@Url.Content("~/Content/img/icons/iconprof.png")"
+                },
+                pageUrls: {
+                    viewProfile: "@Url.Content("~/profile/display/")",
+                }
+            };
+        },
+        computed: {
+            profileUrl: function () {
+                return this.pageUrls.viewProfile + this.username;
+            },
+            profileImageUrlOrDefault: function () {
+                return this.profileImageUrl || this.imageUrls.defaultProfile;
+            }
+        }
+    });
+</script>

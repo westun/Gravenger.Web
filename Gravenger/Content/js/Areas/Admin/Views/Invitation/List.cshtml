@@ -1,0 +1,46 @@
+﻿@model InvitationListVM
+
+<h2>Invitation List</h2>
+<hr />
+
+@Html.Partial("Partials/InvitationPillNav")
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email Address</th>
+            <th>Invited By</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invitation in Model.Invitations)
+        {
+            <tr>
+                <td>@invitation.FirstName</td>
+                <td>@invitation.LastName</td>
+                <td>@invitation.Email</td>
+                <td>@invitation.CreatedByAccount.FirstName @invitation.CreatedByAccount.LastName</td>
+                <td>
+                    <form method="post" autocomplete="off" action="@Url.Action("SendInvitation")">
+                        @if(invitation.Accepted)
+                        {
+                            <button type="button" disabled class="btn btn-success">Invitation Accepted</button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-primary">Send Invitation</button>
+                        }
+                        @Html.Hidden("invitationID", invitation.InvitationID)
+                        @Html.AntiForgeryToken()
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    @Html.Partial("Partials/InvitationPillNavVueScript")
+}

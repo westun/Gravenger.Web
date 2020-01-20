@@ -1,0 +1,19 @@
+﻿@model InvitationVM
+
+<form method="post" autocomplete="off">
+    <div class="load-box">
+        <h1>Re-send Invitation</h1>
+        <div>
+            @Html.LabelFor(model => model.Email)
+            @Html.TextBoxFor(model => model.Email)
+            <div>
+                @Html.ValidationMessageFor(model => model.Email)
+            </div>
+        </div>
+
+        <button type="submit" class="basic-button">Re-send my invitation</button>
+    </div>
+
+    @Html.AntiForgeryToken()
+</form>
+

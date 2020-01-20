@@ -1,0 +1,151 @@
+﻿<script type="text/x-template" id="add-card-template">
+    <div>
+        <router-link class="btn btn-primary btn-lg mb-3" v-bind:to="{ name: 'home' }">Return To Card List</router-link>
+        <h2 class="mb-3">Add New Card</h2>
+        <div class="alert alert-success" v-show="successMessage" role="alert">
+            {{ successMessage }}
+        </div>
+        <div class="form-group form-inline">
+            <label class="control-label" for="card-title">Name:&nbsp;</label>
+            <input 
+                type="text" 
+                class="form-control"
+                name="card-title"
+                v-model="card.title"
+                v-bind:class="{ 'is-danger': errors.has('card-title') }"
+                v-validate="'required'"
+            />
+            <span class="help is-danger" v-show="errors.has('card-title')">&nbsp;Required</span>
+        </div>
+        <div class="form-group form-inline">
+            <label class="control-label">Category:&nbsp;</label>
+            <select class="form-control" v-model="card.category">
+                <option></option>
+                <option v-for="category in categories">{{ category }}</option>
+            </select>
+        </div>
+        <div class="row">
+            <div class="col-sm-4" v-for="tile in card.tiles" v-bind:key="tile.position">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <p class="card-text">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Enter tile name"
+                                v-model="tile.title"
+                                v-bind:name="'tile-title-' + tile.position"
+                                v-bind:class="{ 'is-danger': errors.has('tile-title-' + tile.position) }"
+                                v-validate="'required'"
+                            />
+                        </p>
+                        <span class="help is-danger" v-show="errors.has('tile-title-' + tile.position)">Required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group form-inline mt-3">
+            <label class="control-label">Tags:&nbsp;</label>
+            <input type="text"
+                   class="form-control col-sm-4"
+                   v-model="tagsText"
+                   placeholder="separate tags with commas" />
+            &nbsp;<span class="badge badge-pill badge-secondary badge-tag mr-1" v-for="tag in tagsTextToObjectArray">{{ tag.name }}</span>
+        </div>
+        <div class="mb-3">
+            <button class="btn btn-primary btn-lg" v-on:click="publishCard" v-on:keyUp.enter="publishCard">Publish</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('add-card', {
+        template: '#add-card-template',
+        data: function () {
+            return {
+                publishCardApiUrl: '@Url.Content("~/api/card")',
+                getCategoriesApiUrl: '@Url.Content("~/api/category")',
+                card: this.getBlankCard(),
+                categories: [],
+                tagsText: '',
+                successMessage: ''
+            };
+        },
+        created: function () {
+            this.loadCategories();
+        },
+        computed: {
+            tagsTextToObjectArray: function () {
+                return this.tagsText.split(',').map(function (tag) {
+                    return { name: tag.trim() };
+                });
+            }
+        },
+        methods: {
+            loadCategories: function () {
+                var vm = this;
+                $.get(vm.getCategoriesApiUrl, function (data) {
+                    vm.categories = data;
+                });
+            },
+            publishCard: function () {
+                this.card.tags = this.tagsTextToObjectArray;
+                
+                var vm = this;
+                this.validateForm().then(function (isValid) {
+                    if (!isValid) {
+                        return;
+                    }
+
+                    $.post(vm.publishCardApiUrl, vm.card).done(function (data) {
+                        vm.successMessage = 'Card "' + vm.card.title + '" was published successfully.';
+                        //TODO: is this something vue state management may be able to accomplish better
+                        vm.clearCard();
+                        vm.clearErrors();
+                    });
+                });
+            },
+            getBlankCard: function () {
+                return {
+                    title: null,
+                    category: '',
+                    tiles: _.chain(_.range(1, 10))
+                        .map(function (position) {
+                            return {
+                                title: null,
+                                position: position
+                            }
+                        })
+                        .value(),
+                    tags: []
+                };
+            },
+            clearCard: function () {
+                //TODO: is this something vue state management may be able to accomplish better
+                this.card = this.getBlankCard();
+                this.tagsText = '';
+            },
+            clearErrors: function () {
+                var vm = this;
+                Vue.nextTick().then(function () {
+                    vm.errors.clear();
+                });
+            },
+            validateForm: function () {
+                return this.$validator.validateAll();
+            }
+        }
+    });
+</script>
+
+<style type="text/css">
+    span.badge-tag {
+        font-size: 20px;
+    }
+    .help.is-danger {
+        color: #ff3860;
+    }
+    .is-danger {
+        border-color: #ff3860;
+    }
+</style>

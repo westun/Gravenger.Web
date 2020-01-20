@@ -1,0 +1,15 @@
+﻿@model InvitationAcceptVM
+
+<div class="load-box">
+    <h1>Accept Invitation</h1>
+
+    @Html.Partial("Partials/alerts")
+
+    <form method="post" autocomplete="off">
+        @Html.EditorFor(model => model.AccountCreateVM)
+
+        <button type="submit" class="basic-button">Submit</button>
+
+        @Html.AntiForgeryToken()
+    </form>
+</div>

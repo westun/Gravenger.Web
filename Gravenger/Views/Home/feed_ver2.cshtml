@@ -1,0 +1,97 @@
+﻿
+@section Styles{
+    <style>
+        .feed {
+            height: 600px;
+            border: none;
+            overflow: auto;
+        }
+
+            .feed::-webkit-scrollbar {
+                background-color: white;
+            }
+
+            .feed::-webkit-scrollbar-thumb {
+                background-color: #EFEFEF;
+                border-radius: 0px;
+            }
+
+        .feed-content {
+            margin-bottom: 10px;
+            height: 100px;
+            width: 300px;
+            border: 2px solid #7139A9;
+            color: black;
+            padding: 5px;
+        }
+
+        .image {
+            height: 300px;
+            width: 300px;
+        }
+        /*once style is finalized, move to stylebw.css*/
+    </style>
+}
+
+<div id="feedApp" v-cloak>
+    <div class="menu">
+        <p>
+            Today's featured card:
+            <br />
+            <a class="cardname" href="#">Daily Scavenger Hunt</a>
+        </p>
+    </div>
+    <div class="feed">
+        <div class="space-bottom-20" v-for="feedItem in feedItems">
+            @* Make display of feed items it's own component, that accepts a feeditemtype as a parameter. *@
+            <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeAddedCard'">
+                {{ feedItem.followeeUserName }} added the card {{ feedItem.cardTitle }}
+            </div>
+            <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.YouFollowed'">
+                You followed
+                <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+            </div>
+            <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FollowedYou'">
+                <profile-photo-icon-link v-bind:username="feedItem.followerUserName" v-bind:profile-image-url="feedItem.followerProfileImageUrl"></profile-photo-icon-link>
+                followed You
+            </div>
+            <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeFollowed'">
+                <profile-photo-icon-link v-bind:username="feedItem.followerUserName" v-bind:profile-image-url="feedItem.followerProfileImageUrl"></profile-photo-icon-link>
+                followed
+                <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+            </div>
+            <div class="feed-content image" v-for="imageUrl in feedItem.imageUrls">
+                <img v-bind:src="imageUrl" v-bind:alt="feedItem.message" />
+            </div>
+            <hr />
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    @Html.Partial("VueComponents/ProfilePhotoIconLink")
+
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: '#feedApp',
+            data: {
+                apiUrls: {
+                    feed: "@Url.Content("~/api/feed/v2/items")",
+                },
+                feedItems: []
+            },
+            created: function () {
+                this.loadFeed();
+            },
+            methods: {
+                loadFeed: function () {
+                    var vm = this;
+                    $.get(vm.apiUrls.feed, function (data) {
+                        vm.feedItems = data;
+                    });
+                }
+            }
+        });
+    </script>
+}

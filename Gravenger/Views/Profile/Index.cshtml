@@ -1,0 +1,15 @@
+﻿
+@section Styles{
+    <link rel="stylesheet" href="~/Content/css/croppie.css" />
+}
+
+<profile-page></profile-page>
+
+@section VueComponentLocalRegistration {
+    @Html.Partial("VueComponents/ProfilePage")
+    @Html.Partial("VueComponents/ProfilePhoto")
+}
+
+@section Scripts{
+    <script type="text/javascript" src="~/Content/js/croppie.js"></script>
+}

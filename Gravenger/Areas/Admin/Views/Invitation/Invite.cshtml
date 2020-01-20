@@ -1,0 +1,41 @@
+﻿@model InviteVM
+
+<h2>Create An Invitation</h2>
+<hr />
+
+@Html.Partial("Partials/InvitationPillNav")
+
+@Html.Partial("Partials/Alerts")
+
+<h3 class="mb-4">Enter the information below for the person you would like to invite.</h3>
+<form method="post" autocomplete="false">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label for="@Html.IdFor(model => model.FirstName)" class="control-label">First Name:</label>
+                @Html.TextBoxFor(model => model.FirstName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.FirstName)
+            </div>
+
+            <div class="form-group">
+                <label for="@Html.IdFor(model => model.LastName)" class="control-label">Last name or last initial:</label>
+                @Html.TextBoxFor(model => model.LastName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LastName)
+            </div>
+
+            <div class="form-group">
+                <label for="@Html.IdFor(model => model.Email)" class="control-label">Email Address:</label>
+                @Html.TextBoxFor(model => model.Email, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Email)
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Create Invitation</button>
+
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts{
+    @Html.Partial("Partials/InvitationPillNavVueScript")
+}

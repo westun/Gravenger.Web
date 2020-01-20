@@ -1,0 +1,211 @@
+﻿<script type="text/x-template" id="feed-page-template">
+    <div>
+        <div class="menu">
+            <!--placeholder for app info/updates/notices-->
+        </div>
+        <div class="card-modal" id="card-modal">
+            <p class="card-modal-content">
+                <cardmodal v-bind:postcard="currentlyViewedCard"
+                           v-bind:current-user-has-postcard="currentUserHasCurrentlyViewedPostcard"
+                           v-on:postcard-added="onPostcardAdded">
+                </cardmodal>
+            </p>
+            <span id="card-close">Click anywhere to close</span>
+        </div>
+        <div class="feed">
+            <div v-if="!feedItems.length" class="welcome-blurb">
+                <p style="font-weight: 600;">Welcome to Seenry!</p>
+                <p>
+                Thank you for being a member of our Alpha Phase group. We hope you enjoy Seenry! Please be sure to give us any <a href="~/Views/Feedback/Index.cshtml">Feedback</a> you have!</p>
+
+            </div>
+            <div class="space-bottom-20 feed-content" v-for="feedItem in feedItems">
+                <div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeAddedTile'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                        added a photo to the postcard <strong><span class="open-card-modal-link" v-on:click="viewCard(feedItem.cardID, feedItem.followeeUserName)">{{ feedItem.cardTitle }}</span></strong>
+                        for tile <strong>{{feedItem.tileTitle}}</strong>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.YouFollowed'">
+                        <profile-photo-icon-link username="You" v-bind:profile-image-url="currentUserProfile.profileImageFullPath"></profile-photo-icon-link>
+                        followed
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FollowedYou'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followerUserName" v-bind:profile-image-url="feedItem.followerProfileImageUrl"></profile-photo-icon-link>
+                        followed
+                        <profile-photo-icon-link username="you" v-bind:profile-image-url="currentUserProfile.profileImageFullPath"></profile-photo-icon-link>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeFollowed'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followerUserName" v-bind:profile-image-url="feedItem.followerProfileImageUrl"></profile-photo-icon-link>
+                        followed
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeAddedCard'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                        added the postcard <strong><a v-bind:href="getCardUrl(feedItem.cardID)">{{ feedItem.cardTitle }}</a></strong>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeCompletedCard'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                        completed the postcard <strong><span class="open-card-modal-link" v-on:click="viewCard(feedItem.cardID, feedItem.followeeUserName)">{{ feedItem.cardTitle }}</span></strong>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeLikedCard'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                        stamped
+                        <profile-photo-icon-link v-bind:username="feedItem.followerUserName" v-bind:profile-image-url="feedItem.followerProfileImageUrl"></profile-photo-icon-link>'s
+                        postcard <strong><span class="open-card-modal-link" v-on:click="viewCard(feedItem.cardID, feedItem.followerUserName)">{{ feedItem.cardTitle }}</span></strong>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.FolloweeLikedYourCard'">
+                        <profile-photo-icon-link v-bind:username="feedItem.followeeUserName" v-bind:profile-image-url="feedItem.followeeProfileImageUrl"></profile-photo-icon-link>
+                        stamped
+                        <profile-photo-icon-link username="your" v-bind:profile-image-url="currentUserProfile.profileImageFullPath"></profile-photo-icon-link>
+                        postcard <strong><span class="open-card-modal-link" v-on:click="viewCard(feedItem.cardID, feedItem.followerUserName)">{{ feedItem.cardTitle }}</span></strong>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.YouAddedTile'">
+                        <profile-photo-icon-link username="You" v-bind:profile-image-url="currentUserProfile.profileImageFullPath"></profile-photo-icon-link>
+                        added a photo to the postcard
+                        <strong>
+                            <span class="open-card-modal-link" v-on:click="viewCard(feedItem.cardID, currentUserProfile.username)">
+                                {{ feedItem.cardTitle }}
+                            </span>
+                        </strong>
+                        for tile <strong>{{feedItem.tileTitle}}</strong>
+                    </div>
+                    <div v-if="feedItem.feedItemType == '@Gravenger.Domain.Core.Models.FeedItemType.YouCompletedCard'">
+                        <profile-photo-icon-link username="You" v-bind:profile-image-url="currentUserProfile.profileImageFullPath"></profile-photo-icon-link>
+                        completed the postcard
+                        <strong>
+                            <span class="open-card-modal-link" v-on:click="viewCard(feedItem.cardID, currentUserProfile.username)">
+                                {{ feedItem.cardTitle }}
+                            </span>
+                        </strong>
+                    </div>
+                </div>
+                <div class="feed-item-date">{{ getFormatedDate(feedItem.dateTimeStamp) }}</div>
+                <div class="image space-top-20" v-for="imageUrl in feedItem.imageUrls">
+                    <img v-bind:src="imageUrl" v-bind:alt="feedItem.message" />
+                </div>
+                <button class="feed-back-to-top-btn" v-on:click="backToTop" id="back-to-top-btn">^</button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('feed-page', {
+        template: '#feed-page-template',
+        data: function () {
+            return {
+                apiUrls: {
+                    feed: "@Url.Content("~/api/feed/v1.1/items")",
+                },
+                pageUrls: {
+                    card: "@Url.Content("~/card#/card/")"
+                },
+                cardService: new CardService({ rootUrl: "@Url.Content("~/")" }),
+                currentlyViewedCard: {},
+                feedItems: [],
+                accountService: new AccountService({ rootUrl: "@Url.Content("~/")" }),
+                currentUserProfile: {},
+                currentLoggedInAccountID: @User.Identity.GetAccountID(),
+            };
+        },
+        created: function () {
+            this.loadFeed();
+            this.loadCurrentUserProfile();
+        },
+        mounted: function () {
+            this.initOnFeedScroll();
+        },
+        computed: {
+            currentUserHasCurrentlyViewedPostcard: function () {
+                var vm = this;
+                var currentUserHasCurrentlyViewedPostcard = _.some(vm.currentUserProfile.postcards, function (postcard) {
+                    return postcard.cardID == vm.currentlyViewedCard.cardID;
+                });
+
+                return currentUserHasCurrentlyViewedPostcard;
+            }
+        },
+        methods: {
+            loadFeed: function () {
+                var vm = this;
+                $.get(vm.apiUrls.feed, function (data) {
+                    vm.feedItems = data;
+                });
+            },
+            loadCurrentUserProfile: function () {
+                var vm = this;
+                vm.accountService.get(vm.currentLoggedInAccountID).then(function (data) {
+                    vm.currentUserProfile = data;
+                });
+            },
+            getCardUrl: function (cardID) {
+                return this.pageUrls.card + cardID;
+            },
+            getFormatedDate: function (date) {
+                return moment(date).format('MMMM Do, YYYY [at] h:mm a');
+            },
+            viewCard: function (cardID, username) {
+                var vm = this;
+                vm.cardService.getByCardIDAndUsername(cardID, username).then(function (data) {
+                    //TODO: create an API endpoint that gets a users postcard (or if no postcard blank postcard) with left outer joined tiles
+                    //      or consider the get Card api endpoint that requires an accountID/username to return a postcard?
+                    //      For now, create an object that has the same properties/shape as a postcard that the card modal expects
+
+                    //TODO: this may be confusing since in reality a postcard is requird, and on news feed page
+                    //      it is by nature that the user would have a postcard
+                    var postcard;
+                    if (data.postcards && data.postcards.length > 0) {
+                        postcard = data.postcards[0];
+                        postcard.tiles = data.tiles;
+                    }
+                    else {
+                        postcard = data;
+                    }
+
+                    vm.currentlyViewedCard = postcard;
+                    vm.openCardModal();
+                });
+            },
+            onPostcardAdded: function () {
+                //TODO: find more effecient way to do this.
+                //      This is a lazy/easy way to resolve a postcard being added in the CardModal component,
+                //      and reflecting those changes in the profile page.
+                this.loadCurrentUserProfile();
+            },
+            initOnFeedScroll: function () {
+                var vm = this;
+                window.onscroll = function () {
+                    vm.onFeedScroll();
+                };
+                document.getElementsByClassName("feed")[0].onscroll = function () {
+                    vm.onFeedScroll();
+                };
+            },
+            onFeedScroll: function () {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20 ||
+                    document.getElementsByClassName("feed")[0].scrollTop > 20) {
+                    document.getElementById("back-to-top-btn").style.display = "block";
+                } else {
+                    document.getElementById("back-to-top-btn").style.display = "none";
+                }
+            },
+            backToTop: function () {
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+                document.getElementsByClassName("feed")[0].scrollTop = 0;
+            },
+            openCardModal: function () {
+                var modal = document.getElementById('card-modal');
+                modal.style.display = "block";
+                var closebutton = document.getElementById('card-close');
+                window.onclick = function (event) {
+                    if (event.target == modal || event.target == closebutton) {
+                        modal.style.display = "none";
+                    };
+                };
+            },
+        }
+    });
+</script>

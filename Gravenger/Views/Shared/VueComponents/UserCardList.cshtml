@@ -1,0 +1,51 @@
+﻿
+<script type="text/x-template" id="user-card-list-template">
+    <div class="mycards">
+        <div class="mycards-header space-bottom-20">
+            <strong>My Postcards</strong>
+        </div>
+        <div class="space-bottom-20" v-for="card in cards">
+            <a class="card-list-link" v-bind:href="getCardUrl(card)" v-on:click="onCardLinkClicked">
+                {{ card.title }}
+            </a>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('user-card-list', {
+        template: '#user-card-list-template',
+        props: {
+            cards: Array
+        },
+        data: function () {
+            return {
+                pageUrls: {
+                    card: "@Url.Content("~/card#/card/")",
+                },
+            };
+        },
+        methods: {
+            getCardUrl: function (card) {
+                return this.pageUrls.card + card.cardID;
+            },
+            onCardLinkClicked: function () {
+                this.$emit('card-list-link-clicked');
+            },
+        }
+    });
+</script>
+
+<style type="text/css">
+    /*TODO: add any specific style for card list vue.js component
+        Or if you prefer, remove this entire <style> tag and add styles to a CSS style sheet
+        P.S. sorry I may have broken style/formating things, 
+            but I think using an <a> tag for something that is meant to link to another page is the ideal approach
+    */
+    a.card-list-link {
+
+    }
+    .mycards-header {
+        font-size:larger; /* I don't know what I'm doing - Wes */
+    }
+</style>

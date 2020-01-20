@@ -1,0 +1,30 @@
+﻿@model Gravenger.ViewModels.AccountCreateVM
+
+<div>
+    @Html.LabelFor(model => model.Name)
+    @Html.TextBoxFor(model => model.Name)
+    <div>
+        @Html.ValidationMessageFor(model => model.Name)
+    </div>
+</div>
+<div>
+    @Html.LabelFor(model => model.Email)
+    @Html.TextBoxFor(model => model.Email)
+    <div>
+        @Html.ValidationMessageFor(model => model.Email)
+    </div>
+</div>
+<div>
+    @Html.LabelFor(model => model.Username)
+    @Html.TextBoxFor(model => model.Username)
+    <div>
+        @Html.ValidationMessageFor(model => model.Username)
+    </div>
+</div>
+<div>
+    @Html.LabelFor(model => model.Password)
+    @Html.TextBoxFor(model => model.Password, new { @type = "password" })
+    <div>
+        @Html.ValidationMessageFor(model => model.Password)
+    </div>
+</div>

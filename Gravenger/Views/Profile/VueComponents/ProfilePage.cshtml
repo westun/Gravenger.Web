@@ -1,0 +1,334 @@
+﻿<script type="text/x-template" id="profile-page-template">
+    <div>
+        <div class="followers-modal" id="followers-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    Followers
+                    <span class="modal-close-button" id="followers-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+                <div class="userfollow-item" v-for="follower in followers">
+                    <a v-bind:href="viewProfileUrl + follower.username">
+                        <img class="profile-pic-icon" v-bind:src="follower.profileImageFullPath" />
+                        <span>
+                            {{ follower.username }}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="followers-modal" id="followees-modal">
+            <div class="modal-content">
+                <span class="menu">
+                    Following
+                    <span class="modal-close-button" id="followees-close" style="text-align: right;">
+                        X
+                    </span>
+                </span>
+
+                <div class="userfollow-item" v-for="followee in followees">
+                    <a v-bind:href="viewProfileUrl + followee.username">
+                        <img class="profile-pic-icon" v-bind:src="followee.profileImageFullPath" />
+                        <span>
+                            {{ followee.username }}
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-head-container">
+            <profile-photo v-bind:can-edit="currentUserIsViewingSelf"
+                           v-bind:profile-image-file-name="profile.profileImageFileName"
+                           v-bind:profile-image-full-path="profile.profileImageFullPath"
+                           v-bind:default-profile-image-path="imageUrls.defaultProfile">
+            </profile-photo>
+
+            <div class="user-info space-bottom-20">
+                <p class="username">
+                    {{ profile.username }}
+                </p>
+                <p class="userbio">
+                    <a href="@Url.Action("boards","social")" style="color: black;">
+                        Current score:
+                        <span class="basic-number">
+                            {{ profile.userscore }}
+                        </span>
+                    </a>
+                </p>
+                <div class="userfollow">
+                    <div class="userfollow-menu followers-menu" v-on:click="openFollowersModal" style="cursor:pointer;" title="View all followers">
+                        Followers:
+                        <span class="basic-number">{{ followers.length }}</span>
+                    </div>
+                    <div class="userfollow-container followers-content" id="userfollow-container">
+                        <div class="userfollow-item" v-for="follower in followers">
+                            <a v-bind:href="viewProfileUrl + follower.username" title="View profile">
+                                <img class="profile-pic-icon" v-bind:src="follower.profileImageFullPath" />
+                                <br />
+                                <span>
+                                    {{ follower.username }}
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="userfollow-menu following-menu" v-on:click="openFolloweesModal" style="cursor:pointer;" title="View all followees">
+                        Following:
+                        <span class="basic-number">{{ followees.length }}</span>
+                    </div>
+
+                    <div class="userfollow-container following-content">
+                        <div class="userfollow-item" v-for="followee in followees">
+                            <a v-bind:href="viewProfileUrl + followee.username" title="View profile">
+                                <img class="profile-pic-icon" v-bind:src="followee.profileImageFullPath" />
+                                <br />
+                                <span data-bind="click: $root.viewUserProfile">
+                                    {{ followee.username }}
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-bottom-20 space-top-10" v-if="!currentUserIsViewingSelf">
+                <button type="button" class="basic-button follow-button" v-if="!currentUserIsFollowing" v-on:click="follow()">
+                    Follow
+                </button>
+                <button type="button" class="basic-button" v-if="currentUserIsFollowing" v-on:click="unfollow()">
+                    Unfollow
+                </button>
+            </div>
+
+
+        </div>
+
+        <div class="profile-card-container">
+            <div class="user-cards">
+                <div class="menu" style="grid-column: span 3;">
+                    {{ profile.username }}'s Postcards
+                </div>
+                <p class="user-card-titles" style="display: inline-block;" v-for="card in cards">
+                    <span class="cardname" style="cursor:pointer;" v-on:click="viewCard(card)">
+                        {{ card.title }}
+                    </span>
+
+                    <like-card v-bind:postcard="card"
+                               v-bind:can-like-card="!currentUserIsViewingSelf"
+                               v-bind:show-accounts-on-click-only="true"
+                               v-on:card-liked="onCardLikedFromList(card)"
+                               v-on:card-unliked="onCardUnLikedFromList(card)">
+                    </like-card>
+                </p>
+            </div>
+        </div>
+
+        <div class="card-modal" id="card-modal">
+            <p class="card-modal-content">
+                <cardmodal v-bind:postcard="currentlyViewedCard"
+                           v-bind:current-user-has-postcard="currentUserHasCurrentlyViewedPostcard"
+                           v-on:postcard-added="onPostcardAdded"
+                           v-on:card-liked="onCardLiked"
+                           v-on:card-unliked="onCardUnliked">
+                </cardmodal>
+            </p>
+            <span id="card-close">Click anywhere to close me</span>
+        </div>
+
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('profile-page', {
+        template: '#profile-page-template',
+        data: function () {
+            return {
+                apiUrls: {
+                    likeCard: "@Url.Content("~/api/account/likepostcard/")",
+                    unlikeCard: "@Url.Content("~/api/account/removePostcardlike/")",
+                    profile: "@Url.Content("~/api/account/" + ViewBag.AccountID)",
+                },
+                imageUrls: {
+                    defaultProfile: "@Url.Content("~/Content/img/icons/iconprof.png")",
+                    noStar: "@Url.Content("~/Content/img/icons/no-star.png")",
+                    star: "@Url.Content("~/Content/img/icons/star.png")",
+                },
+                viewProfileUrl: "@Url.Content("~/profile/display/")",
+                profile: {
+                    accountID: null,
+                    username: null,
+                    userscore: 0,
+                    profileImageFullPath: null,
+                },
+                cards: [],
+                followers: [],
+                followees: [],
+                currentlyViewedCard: {},
+                currentLoggedInAccountID: "@ViewBag.CurrentLoggedInAccountID",
+                currentUserIsViewingSelf: null,
+                currentUserIsFollowing: false,
+                accountService: new AccountService({ rootUrl: "@Url.Content("~/")" }),
+                currentUserProfile: {},
+            };
+        },
+        created: function () {
+            this.loadProfile();
+            this.loadCurrentUserProfile();
+        },
+        mounted: function () {
+            this.hideRightSidebar();
+        },
+        computed: {
+            currentUserHasCurrentlyViewedPostcard: function () {
+                var vm = this;
+                var currentUserHasCurrentlyViewedPostcard = _.some(vm.currentUserProfile.postcards, function (postcard) {
+                    return postcard.cardID == vm.currentlyViewedCard.cardID;
+                });
+
+                return currentUserHasCurrentlyViewedPostcard;
+            }
+        },
+        methods: {
+            loadProfile: function () {
+                var vm = this;
+                return $.get(vm.apiUrls.profile, function (data) {
+                    vm.profile.accountID = data.accountID;
+                    vm.profile.username = data.username;
+                    vm.profile.profileImageFileName = data.profileImageFileName;
+                    vm.profile.profileImageFullPath = data.profileImageFullPath;
+
+                    vm.cards = data.postcards;
+                    vm.followers = data.followers;
+                    vm.followees = data.followees;
+
+                    var likes = vm.cards.map(function (item) {
+                        return item["likes"]
+                    });
+
+                    if (likes.length) {
+                        vm.profile.userscore = likes.reduce(function (a, b) { return a + b });
+                    }
+
+                    _.each(vm.followers, function (follower) {
+                        follower.profileImageFullPath = follower.profileImageFullPath || vm.imageUrls.defaultProfile;
+                    });
+
+                    _.each(vm.followees, function (followee) {
+                        followee.profileImageFullPath = followee.profileImageFullPath || vm.imageUrls.defaultProfile;
+                    });
+
+                    vm.currentUserIsViewingSelf = vm.currentLoggedInAccountID == data.accountID;;
+
+                    var currentUserFollowerRecord = _.find(vm.followers, function (follower) {
+                        return follower.accountID == vm.currentLoggedInAccountID;
+                    });
+
+                    if (currentUserFollowerRecord) {
+                        vm.currentUserIsFollowing = true;
+                    }
+                });
+            },
+            loadCurrentUserProfile: function () {
+                var vm = this;
+                vm.accountService.get(vm.currentLoggedInAccountID).then(function (data) {
+                    vm.currentUserProfile = data;
+                });
+            },
+            viewCard: function (card) {
+                this.currentlyViewedCard = card;
+                this.openCardModal();
+            },
+            onCardLikedFromList: function (card) {
+                var vm = this;
+
+                //since like-card component persists likes to database and internally manages count
+                //must ensure the state of the postcards on the "profile" page is managed by subscribing to event
+                card.isLikedByCurrentUser = true;
+                card.likes++;
+
+                //TODO: find proper way to resolve this?  This may be a reasonable way to resolve this or is easy/lazy
+                //      way to resolve liking a card on the profile page and having changes reflected in "CardModal" component
+                vm.currentlyViewedCard = {};
+            },
+            onCardUnLikedFromList: function (card) {
+                var vm = this;
+
+                card.isLikedByCurrentUser = false;
+                card.likes--;
+
+                //TODO: find proper way to resolve this?  This may be a reasonable way to resolve this or is easy/lazy
+                //      way to resolve unliking a card on the profile page and having changes reflected in "CardModal" component
+                vm.currentlyViewedCard = {};
+            },
+            follow: function () {
+                var vm = this;
+                var followeeid = vm.profile.accountID;
+                vm.accountService.follow(followeeid).done(function (data) {
+                    vm.currentUserIsFollowing = true;
+                    vm.loadProfile();
+                });
+            },
+            unfollow: function (user) {
+                var vm = this;
+                var followeeid = vm.profile.accountID;
+                vm.accountService.unfollow(followeeid).done(function (data) {
+                    vm.currentUserIsFollowing = false;
+                    vm.loadProfile();
+                });
+            },
+            onPostcardAdded: function () {
+                //TODO: find more effecient way to do this.
+                //      This is a lazy/easy way to resolve a postcard being added in the CardModal component,
+                //      and reflecting those changes in the profile page.
+                this.loadCurrentUserProfile();
+            },
+            onCardLiked: function () {
+                //TODO: find more effecient way to do this.
+                //      This is a lazy/easy way to resolve a postcard being liked in the CardModal component,
+                //      and reflecting those changes in the profile page.
+                this.loadProfile();
+            },
+            onCardUnliked: function () {
+                //TODO: find more effecient way to do this.
+                //      This is a lazy/easy way to resolve a postcard being unliked in the CardModal component,
+                //      and reflecting those changes in the profile page.
+                this.loadProfile();
+            },
+            openFollowersModal: function () {
+                var modal = document.getElementById('followers-modal');
+                modal.style.display = "grid";
+                var closebutton = document.getElementById('followers-close');
+                window.onclick = function (event) {
+                    if (event.target == modal || event.target == closebutton) {
+                        modal.style.display = "none";
+                    };
+                };
+            },
+            openFolloweesModal: function () {
+                var modal = document.getElementById('followees-modal');
+                modal.style.display = "grid";
+                var closebutton = document.getElementById('followees-close');
+                window.onclick = function (event) {
+                    if (event.target == modal || event.target == closebutton) {
+                        modal.style.display = "none";
+                    };
+                };
+            },
+            openCardModal: function () {
+                var modal = document.getElementById('card-modal');
+                modal.style.display = "block";
+                var closebutton = document.getElementById('card-close');
+                window.onclick = function (event) {
+                    if (event.target == modal || event.target == closebutton) {
+                        modal.style.display = "none";
+                    };
+                };
+            },
+            hideRightSidebar: function () {
+                document.getElementById("rightsidebar").setAttribute("style", "display: none");
+            },
+        }
+    });
+</script>

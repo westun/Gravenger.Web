@@ -1,0 +1,40 @@
+﻿@model Gravenger.ViewModels.AccountVM
+
+@{ 
+    Layout = "~/Views/_accountLayout.cshtml";
+    bool inviteOnly = System.Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings["InvitationOnly"].ToString());
+}
+
+<div class="load-box">
+    <h1>Login</h1>
+
+    @Html.Partial("Partials/Alerts")
+
+    <form action="@Url.Action("login")" method="post" autocomplete="off">
+        @Html.EditorFor(model => model.AccountLoginVM)
+        @Html.HiddenFor(model => model.ReturnUrl)
+        <button type="submit" class="basic-button">Submit</button>
+        @Html.AntiForgeryToken()
+    </form>
+
+    <div class="space-top-20">
+        <a href="@Url.Action("reset")">Forgot password?</a>
+    </div>
+</div>
+
+@if (!inviteOnly)
+{
+    <div class="or">
+        or
+    </div>
+
+    <div class="load-box">
+        <h1>Create Your Account</h1>
+
+        <form action="@Url.Action("create")" method="post" autocomplete="off">
+            @Html.EditorFor(model => model.AccountCreateVM)
+            <button type="submit" class="basic-button">Submit</button>
+            @Html.AntiForgeryToken()
+        </form>
+    </div>
+}

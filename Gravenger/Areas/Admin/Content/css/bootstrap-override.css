@@ -1,0 +1,28 @@
+﻿.btn-primary {
+    background-color: #62228A;
+    border-color: #62228A;
+}
+
+.btn-primary:hover {
+    background-color: #571e7a;
+    border-color: #571e7a;
+}
+
+.btn-primary:not(:disabled):not(.disabled).active, 
+.btn-primary:not(:disabled):not(.disabled):active, 
+.show > .btn-primary.dropdown-toggle .btn-primary:active {
+    background-color: #571e7a;
+    border-color: #571e7a;
+}
+
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.show > .btn-primary.dropdown-toggle:focus,
+.btn-primary.focus,
+.btn-primary:focus {
+    box-shadow: 0 0 0 0.2rem rgba(194, 152, 214, 0.5)
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    background-color: #62228A;
+}

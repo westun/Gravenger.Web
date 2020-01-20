@@ -1,0 +1,186 @@
+﻿<script type="text/x-template" id="profile-photo-template">
+    <div class="profile-pic-box" v-bind:class="{'profile-pic-box-editing': editingPhoto}">
+        <div class="edit-photo-overlay" v-show="editingPhoto"></div>
+        <div class="user-profile-pic-box">
+            <p class="edit-photo-header basic-button" v-show="editingPhoto && isMobile">Profile Photo</p>
+            <div class="tile-container">
+                <p class="profile-pic-button-box">
+                    <button class="basic-button" v-show="editingPhoto" v-on:click="removePhoto" style="cursor:pointer;">Remove</button>
+                    <button class="basic-button" v-show="editingPhoto" v-on:click="uploadPhoto" style="cursor:pointer;">Done</button>
+                </p>
+
+                <input type="file" class="file" id="file-profile-pic" v-on:change="fileInputOnChange">
+                <div id="profile-pic" class="tile">
+                    <img v-bind:src="imagePath || imageUrls.defaultProfile" v-show="!editingPhoto" alt="Your profile photo" />
+                </div>
+            </div>
+        </div>
+        <div class="edit-button-box" v-if="canEdit">
+            <label for="file-profile-pic">
+                <button onclick="this.parentElement.click()" class="basic-button edit-button" id="edit-button" v-show="!editingPhoto">
+                    Add New Photo
+                </button>
+            </label>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('profile-photo', {
+        template: '#profile-photo-template',
+        props: {
+            canEdit: Boolean,
+            profileImageFileName: String,
+            profileImageFullPath: String,
+            defaultProfileImagePath: String
+        },
+        data: function () {
+            return {
+                apiUrls: {
+                    accountProfile: "@Url.Content("~/api/AccountProfile")",
+                    photo: "@Url.Content("~/api/photo")"
+                },
+                imageUrls: {
+                    defaultProfile: this.defaultProfileImagePath,
+                },
+                croppie: null,
+                imageContainerID: 'profile-pic',
+                editingPhoto: false,
+                imageFileName: this.profileImageFileName,
+                imagePath: this.profileImageFullPath,
+                isLoadingImage: false,
+            };
+        },
+        computed: {
+            isMobile: function() {
+                if (window.matchMedia("(max-width: 500px)").matches ) {
+                    return true;
+                };
+            },
+        },
+        watch: {
+            profileImageFileName: function (newValue, oldValue) {
+                this.imageFileName = this.profileImageFileName;
+            },
+            profileImageFullPath: function (newValue, oldValue) {
+                this.imagePath = this.profileImageFullPath;
+            },
+            isLoadingImage: function (newValue, oldValue) {
+                newValue ? $('body').block() : $('body').unblock();
+            },
+        },
+        methods: {
+            fileInputOnChange: function (event) {
+                var fileInput = event.target;
+                if (fileInput.files.length == 0) {
+                    return;
+                }
+
+                var vm = this;
+
+                vm.isLoadingImage = true;
+
+                var fileReader = new FileReader();
+                fileReader.onloadend = function () {
+                    vm.croppie.bind({ url: fileReader.result });
+                    vm.editingPhoto = true;
+                    vm.isLoadingImage = false;
+                }
+
+                var imageContainer = document.getElementById(vm.imageContainerID);
+                vm.croppie = new Croppie(imageContainer, {
+                    //TODO: Update to not be hard coded
+                    viewport: {
+                        width: 248,
+                        height: 248
+                    },
+                    showZoomer: false,
+                    enableExif: true,
+                });
+                if (vm.fileInputValue === '') {
+                    vm.croppie.destroy();
+                };
+
+                fileReader.readAsDataURL(fileInput.files[0]);
+            },
+            uploadPhoto: function () {
+                var vm = this;
+
+                vm.croppie.result('base64').then(function (base64) {
+                    vm.croppie.result('blob').then(function (blob) {
+                        var isReplacingExistingPhoto = vm.imagePath != null;
+                        var previousPhotoFileName = vm.imageFileName;
+
+                        $.post(vm.apiUrls.photo, { base64: base64, mimeType: blob.type }).done(function (data) {
+                            vm.croppie.destroy();
+                            vm.croppie = null;
+                            
+                            vm.imageFileName = data.fileName;
+                            vm.imagePath = data.fullPath;
+
+                            if (isReplacingExistingPhoto) {
+                                $.when(vm.deletePhoto(previousPhotoFileName)).then(function (data) {
+                                    $.when(vm.updateProfileImage()).then(function (data) {
+                                        vm.editingPhoto = false;
+                                    });
+                                });
+                            }
+                            else {
+                                $.when(vm.updateProfileImage()).then(function (data) {
+                                    vm.editingPhoto = false;
+                                });
+                            }
+                        });
+                    });
+                });
+            },
+            updateProfileImage: function () {
+                var vm = this;
+                
+                var accountProfileDTO = {
+                    profileImageFileName: vm.imageFileName,
+                    profileImageFullPath: vm.imagePath
+                }
+
+                var def = $.Deferred();
+                $.ajax({
+                    url: vm.apiUrls.accountProfile,
+                    type: 'PUT',
+                    data: accountProfileDTO,
+                    success: function (data) {
+                        def.resolve(data);
+                    },
+                    error: function (data) {
+                        def.reject(data);
+                    },
+                    complete: function (data) {
+
+                    }
+                });
+                return def.promise();
+            },
+            removePhoto: function () {
+                var vm = this;
+                vm.croppie.destroy();
+                vm.croppie = null;
+                vm.editingPhoto = false;
+            },
+            deletePhoto: function (fileName) {
+                var vm = this;
+                var def = $.Deferred();
+                $.ajax({
+                    url: vm.apiUrls.photo,
+                    type: 'DELETE',
+                    data: { fileName: fileName },
+                    success: function (data) {
+                        def.resolve(data);
+                    },
+                    error: function (data) {
+                        def.reject(data);
+                    }
+                });
+                return def.promise();
+            }
+        }
+    });
+</script>

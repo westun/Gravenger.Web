@@ -1,0 +1,178 @@
+﻿<script type="text/x-template" id="notifications-template">
+    <div class="followers-modal" id="notifications-modal" v-if="isVisible">
+        <div id="notifications-content" class="notifications modal-content">
+            <span class="menu">
+                Notifications
+                <span class="modal-close-button" id="notifications-close" style="text-align: right;">
+                    X
+                </span>
+            </span>
+            <div class="notification-item" v-for="notification in notifications">
+                <div v-bind:class="{ 'notification-item-unread': !notification.isRead }">
+                    <a v-bind:href="viewProfileUrl + notification.actorAccountUsername">
+                        <img class="profile-pic-icon" v-bind:src="notification.actorAccountProfileImageFullPath" />
+                        {{ notification.actorAccountUsername}}
+                    </a>
+                    <span v-if="notification.type == 1">
+                        stamped your postcard <a v-bind:href="getCardUrl(notification.cardID)" v-on:click="onCardLinkClick">{{ notification.cardTitle }}</a>
+                    </span>
+                    <span v-if="notification.type == 2">
+                        is following you
+                    </span>
+                    <div class="notification-item-date">
+                        {{ getFormatedDate(notification.dateTimeStamp) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('notifications', {
+        template: '#notifications-template',
+        props: {
+            isVisible: Boolean,
+        },
+        data: function() {
+            return {
+                apiUrls: {
+                    notification: "@Url.Content("~/api/notification")",
+                },
+                imageUrls: {
+                    defaultProfile: "@Url.Content("~/Content/img/icons/iconprof.png")"
+                },
+                pageUrls: {
+                    card: "@Url.Content("~/card#/card/")",
+                },
+                viewProfileUrl: "@Url.Content("~/profile/display/")",
+                notifications: [],
+            };
+        },
+        created: function () {
+            this.loadNotifications();
+        },
+        mounted: function () {
+            this.attachWindowClickListenerForModal();
+        },
+        computed: {
+            hasUnreadNotifications: function () {
+                var vm = this;
+                return _.some(vm.notifications, function (notification) {
+                    return !notification.isRead;
+                });
+            },
+        },
+        methods: {
+            loadNotifications: function () {
+                var vm = this;
+                $.get({ url: vm.apiUrls.notification + '?count=20', global: false })
+                    .done(function (data) {
+                        _.each(data, function (notification) {
+                            if (notification.actorAccountProfileImageFullPath == null) {
+                                notification.actorAccountProfileImageFullPath = vm.imageUrls.defaultProfile;
+                            }
+                        });
+
+                        vm.notifications = data;
+
+                        var unreadNotifications = _.filter(data, function (notification) {
+                            return !notification.isRead;
+                        });
+
+                        if (unreadNotifications && unreadNotifications.length > 0) {
+                            $('#notification-count').text(unreadNotifications.length);
+                        }
+                    })
+                    .fail(function (data) {
+                    });
+            },
+            markAllAsRead: function () {
+                var vm = this;
+
+                var def = $.Deferred();
+                $.ajax({
+                    url: vm.apiUrls.notification,
+                    type: 'PUT',
+                    global: false,
+                    data: {},
+                    success: function (data) {
+                        def.resolve(data);
+
+                        _.each(vm.notifications, function (notification) {
+                            notification.isRead = true;
+                        });
+                    },
+                    error: function (data) {
+                        def.reject(data);
+                    },
+                    complete: function (data) {
+
+                    }
+                });
+                return def.promise();
+            },
+            getFormatedDate: function (date) {
+                return moment(date).format('MMMM Do, YYYY [at] h:mm a');
+            },
+            getCardUrl: function (cardID) {
+                return this.pageUrls.card + cardID;
+            },
+            onCardLinkClick: function () {
+                $('#notifications-modal').fadeOut();
+            },
+            //TODO: fix this.  This is wacky.  
+            //      The way in which the notification icon and the notification modal interact does not make sense.
+            attachWindowClickListenerForModal: function () {
+                var vm = this;
+                window.addEventListener("click", function (event) {
+                    var modal = $("#notifications-modal")[0];
+                    var closebutton = $("#notifications-close")[0];
+                    var closeNotificationModal = event.target == modal || event.target == closebutton;
+                    if (closeNotificationModal) {
+                        if (vm.hasUnreadNotifications) {
+                            vm.markAllAsRead();
+                        }
+                        vm.$emit('notifications-modal-closed');
+                    };
+                });
+            },
+        }
+    });
+</script>
+
+<style type="text/css">
+    /* Just trying to coherce each notificaiton item to expand in height.  Fix this if needed. -Wes */
+    #notifications-content.modal-content {
+        grid-template: repeat(auto-fit, minmax(75px, 75px))/ 1fr;
+    }
+
+        .modal-content .notification-item {
+            border-top: 1px solid #DADADA;
+            text-align: left;
+            height: 60px;
+            padding-top: 5px;
+            margin-left: 5px;
+        }
+
+    .notification-item {
+        display: inline-block;
+        margin-right: 5px;
+        text-align: center;
+    }
+
+    .notification-item-date {
+        font-size: 12px;
+        font-weight: bold;
+        color: #999A9A;
+        padding-left: 45px;
+    }
+    /*this is not an intentional design.  This is to make the modal appear at the top of the page when the html exists at the bottom of the <body>*/
+    #notifications-modal {
+        display:grid;
+    }
+
+    .notification-item-unread {
+        background-color: #e2d7ed;
+    }
+</style>

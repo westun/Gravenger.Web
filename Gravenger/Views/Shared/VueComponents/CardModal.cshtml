@@ -1,0 +1,117 @@
+﻿<script type="text/x-template" id="cardmodal-template">
+    <div class="card-main">
+        <div class="profile-link-holder">
+            <profile-photo-icon-link v-bind:username="postcardUserAccount.username"
+                                     v-bind:profile-image-url="postcardUserAccount.profileImageFullPath">
+            </profile-photo-icon-link>
+            <div class="back-button-holder">
+                <a class="basic-button"
+                   v-show="cachedCurrentUserHasPostcard"
+                   v-bind:href="viewCardUrl">
+                    Edit My Postcard
+                </a>
+                <button class="basic-button"
+                        v-show="!cachedCurrentUserHasPostcard"
+                        v-on:click="addPostcardToAccount">
+                    Add To My Postcards
+                </button>
+                <a onclick="backButton()" class="basic-button">Back</a>
+            </div>
+        </div>
+        <span v-bind:style="{ fontSize: postcardTitleFontSize }">
+            {{ cachedPostcard.title }}
+        </span>
+        <like-card v-bind:postcard="cachedPostcard"
+                   v-bind:can-like-card="!isCurrentUsersCard"
+                   v-on:card-liked="onCardLiked"
+                   v-on:card-unliked="onCardUnliked"
+                   v-bind:show-short-account-list="!isMobile">
+        </like-card>
+        <card v-bind:card="cachedPostcard" v-bind:is-modal="true"></card>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('cardmodal', {
+        template: '#cardmodal-template',
+        props: {
+            postcard: Object,
+            currentUserHasPostcard: Boolean,
+        },
+        data: function() {
+            return {
+                cachedPostcard: {},
+                cachedCurrentUserHasPostcard: false,
+                currentAccountID: @User.Identity.GetAccountID(),
+                cardService: new CardService({ rootUrl: "@Url.Content("~/")" }),
+                postcardUserAccount: {},
+                postcardTitleFontSize: {},
+            }
+        },
+        beforeUpdate: function () {
+            //using "beforeUpdate" lifecycle hook to avoid "flicker" effect of previously loaded card/tiles briefly being shown.
+            //beforeUpdate will run when data changes, and will run "before the DOM is patched"
+            //TODO: would using a "watch" method also resolve this issue?
+            this.cachedPostcard = this.postcard;
+            var self = this;
+            var accountUrl = '@Url.Content("~/api/account/")';
+            if (self.postcardUserAccount.accountID != self.cachedPostcard.accountID) {
+                $.get(accountUrl + self.cachedPostcard.accountID, function(data) {
+                    self.postcardUserAccount = data;
+                });
+            };
+        },
+        updated: function() {
+            var self = this;
+            if (self.isMobile == true && self.postcard.title.length > 24) {
+                self.postcardTitleFontSize = "22px";
+            }
+            else if (self.isMobile == true && self.postcard.title.length > 34) {
+                self.postcardTitleFontSize = "16px"
+            };
+        },
+        computed: {
+            isMobile: function() {
+                if (window.matchMedia("(max-width: 500px)").matches ) {
+                    return true;
+                };
+            },
+            isCurrentUsersCard: function () {
+                //TODO: Should the CardModal component be concerned with if the card belongs to the current user,
+                //      or is this a property the CardModal component should expect?
+                return this.postcard.accountID == this.currentAccountID;
+            },
+            viewCardUrl: function () {
+                return '@Url.Content("~/card#/card/")' + this.cachedPostcard.cardID;  
+            },
+        },
+        watch: {
+            currentUserHasPostcard: function (newValue, oldValue) {
+                this.cachedCurrentUserHasPostcard = newValue;
+            }
+        },
+        methods: {
+            addPostcardToAccount: function () {
+                //TODO: Should the "CardModal" component be responsible for adding a postcard via API call?
+                //      The add postcard button likely belongs in it's own component, but it is still a question of what part
+                //      of the app is responsible for calling the API, and how to properly manage the state between apps/ components?
+                var vm = this;
+                vm.cardService.addPostcard(vm.cachedPostcard.cardID).then(function (data) {
+                    vm.cachedCurrentUserHasPostcard = true;
+                    vm.$emit('postcard-added');
+                });
+            },
+            onCardLiked: function () {
+                this.$emit('card-liked');
+            },
+            onCardUnliked: function () {
+                this.$emit('card-unliked');
+            },
+        }
+    });
+
+    function backButton() {
+        var modal = document.getElementById('card-modal');
+        modal.style.display = "none";
+    };
+</script>

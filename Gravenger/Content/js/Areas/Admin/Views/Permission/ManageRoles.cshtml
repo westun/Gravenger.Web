@@ -1,0 +1,34 @@
+﻿@model ManageRolesVM
+
+<h2>Manage Roles</h2>
+<hr />
+
+<h3>Add New Role</h3>
+<form method="post" class="form-inline" autocomplete="off">
+    <label for="@Html.IdFor(model => model.NewRoleName)">Role Name:&nbsp;</label>
+    @Html.TextBoxFor(model => model.NewRoleName, new { @class = "form-control" })
+    <button type="submit" class="btn btn-primary">Add Role</button>
+    @Html.ValidationMessageFor(model => model.NewRoleName)
+    @Html.AntiForgeryToken()
+</form>
+
+<hr />
+
+<h3>All Existing Roles</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var role in Model.Roles)
+        {
+            <tr>
+                <th scope="row">@role.RoleID</th>
+                <td>@role.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>

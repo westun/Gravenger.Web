@@ -1,0 +1,69 @@
+﻿<script type="text/x-template" id="social-page-template">
+    <div>
+        <div class="menu">Browse users</div>
+        <div class="user" v-for="user in users">
+            <img class="profile-pic-icon" v-bind:src="user.profilePicUrl" />
+            <a class="username" v-bind:href="viewProfileUrl + user.username">{{ user.name }}</a>
+            <button type="button" class="basic-button follow-button" v-if="!user.currentUserIsFollowing" v-on:click="follow(user)">
+                Follow
+            </button>
+            <button type="button" class="basic-button" v-if="user.currentUserIsFollowing" v-on:click="unfollow(user)">
+                Unfollow
+            </button>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('social-page', {
+        template: '#social-page-template',
+        data: function () {
+            return {
+                followingApiUrl: "@Url.Content("~/api/following")",
+                accountListApiUrl: "@Url.Content("~/api/accountlist")",
+                defaultProfileImageUrl: "@Url.Content("~/Content/img/icons/iconprof.png")",
+                viewProfileUrl: "@Url.Content("~/profile/display/")",
+                users: []
+            };
+        },
+        created: function () {
+            this.loadAccountList();
+        },
+        methods: {
+            loadAccountList: function () {
+                var self = this;
+                return $.get(self.accountListApiUrl, function (data) {
+                    self.users = data;
+                    _.each(self.users, function (user) {
+                        user.profilePicUrl = user.profileImageFullPath || self.defaultProfileImageUrl;
+                    });
+                });
+            },
+            follow: function (user) {
+                var self = this;
+                var followeeid = user.accountID;
+                $.post(self.followingApiUrl, { followeeid: followeeid }).done(function (data) {
+                    user.currentUserIsFollowing = true;
+                });
+            },
+            unfollow: function (user) {
+                var self = this;
+                var followeeid = user.accountID;
+                $.ajax({
+                    url: self.followingApiUrl,
+                    data: { followeeid: followeeid },
+                    type: 'DELETE',
+                    success: function (result) {
+                        user.currentUserIsFollowing = false;
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+<style>
+    .submenu.users {
+        background-color: #713A9E;
+    }
+</style>

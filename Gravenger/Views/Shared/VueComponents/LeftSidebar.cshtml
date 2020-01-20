@@ -1,0 +1,20 @@
+﻿<script type="text/x-template" id="left-sidebar-template">
+    <div class="leftbox">
+        <p class="menu"><a href="@Url.Action("index", "home")">HOME</a></p>
+        <p class="menu"><a href="@Url.Action("index","card")#/cards">POSTCARDS</a></p>
+        <p class="menu"><a href="@Url.Action("index","social")">SOCIAL</a></p>
+        <p class="menu"><a href="@Url.Action("index", "profile")">PROFILE</a></p>
+        <p class="menu"><a href="@Url.Action("index", "feedback")">FEEDBACK</a></p>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('left-sidebar', {
+        template: '#left-sidebar-template',
+        data: function () {
+            return {
+                
+            }
+        },
+    });
+</script>

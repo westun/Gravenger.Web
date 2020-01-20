@@ -1,0 +1,119 @@
+
+h1 {
+	font-family: 'Open Sans', sans-serif;
+	color: #222222;
+}
+.card {
+
+}
+.row {
+	margin-bottom: 4px;
+}
+/*.box {
+	font-family: 'Open Sans', sans-serif;
+	text-align: center;
+	line-height: 11em;
+	height: 200px;
+	width: 200px;
+	background-color: #FFFFFF;
+	border: solid;
+	border-width: 2px;
+	border-color: grey;
+	vertical-align: middle;
+	display: inline-block;
+	overflow: hidden;
+	position: relative;
+}
+.box:hover {
+	background-color: #eaeaea;
+    -webkit-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}*/
+
+
+
+.babel {
+	width: 199px;
+	height: 199px;
+	background-color: #fdfdfd; 
+	text-align: center;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 17px;
+	outline: none;
+	display: inline-table;
+    -webkit-transition-duration: 0.4s;
+    transition-duration: 0.4s;
+}
+.babel:hover {
+	color: black;
+    background-color: #eeeded;
+    border-color: #222222;
+    -webkit-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}
+.babel:active {
+	width: 196px;
+	height: 196px;
+	background-color: #ffffff;
+	border-style: solid;
+	border-width: 2px 2px 2px 2px;
+	border-radius: 20px;
+	border-color: #222222;
+	font-size: 1.25em;
+        -webkit-transition-duration: 0.1s;
+	transition-duration: 0.1s;
+}
+
+input[type="file"] {
+  display: block;
+  width: 140px;
+  height: 40px;
+  clip: rect(0px 0px 0px 0px);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+
+.imageLoaded {
+	width: 200px;
+	height: 200px;
+}
+.imageLoaded:hover {
+	width: 199px;
+	height: 199px;
+	padding: 0.4px;
+}
+
+.removebutter {
+	height: 30px;
+	width: 30px;
+	background-color: red;
+	background-image: url(file:///E:/Sublime%20Text%20Build%203126/pics/trash.JPG);
+	border-radius: 6px;
+	border-color: #D9DEDD;
+	border-width: 1px;
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	visibility: hidden;
+}
+.remover {
+	height: 24px;
+	width: 24px;
+	background-color: transparent;
+	background-image: url(/img/pics/removepicx.png);
+	background-repeat: no-repeat;
+    background-size: 24px;
+    opacity: 0.4;
+	border-radius: 6px;
+	border-color: #D9DEDD;
+	border-width: 0px;
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	visibility: hidden;
+}
+.box:hover .remover {
+	visibility: visible;
+}

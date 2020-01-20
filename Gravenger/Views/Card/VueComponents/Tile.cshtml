@@ -1,0 +1,212 @@
+﻿<script type="text/x-template" id="tile-template">
+        <div class="tile-container" v-bind:class="{'editing-photo': editingPhoto }">
+            <div class="edit-photo-overlay" v-show="editingPhoto"></div>
+            <p class="edit-photo-header basic-button" v-bind:style="{ fontSize: headerFontSize }" v-show="editingPhoto && isMobile">{{ tile.title }}</p>
+            <input type="file" class="file" v-bind:id="fileInputID" v-on:change="editPhoto">
+            <label style="cursor:pointer" class="label" v-bind:class="{'label-mobile': isMobile}" v-bind:for="fileInputID" v-show="!editingPhoto && labelView">
+                <p class="v-a-margin-1px"></p>
+                <span v-bind:class="{'label-mobile-photo': hasPhoto && isMobile }">
+                {{ tile.title }}
+                </span>
+            </label>
+            <label class="m-tile-cover-clear" v-show="!editingPhoto" v-on:click="tileLabelToggle"></label>
+            <span class="buttonbox" v-show="hasPhoto && !isMobile || hasPhoto && isMobile && buttonView || editingPhoto" v-bind:class="{'buttonbox-mobile': editingPhoto && isMobile}">
+                <button class="remove" v-show="hasPhoto" v-on:click="removePhoto" style="cursor:pointer;">
+                    Remove
+                </button>
+                <button class="remove" v-show="hasPhoto && !editingPhoto" v-on:click="replacePhoto" style="cursor:pointer;">
+                    Replace
+                </button>
+                <button class="done-button" v-show="editingPhoto" v-on:click="uploadPhoto" style="cursor:pointer;">Done</button>
+            </span>
+            <div class="tile" v-bind:id="tileImageContainerID" v-bind:style="{ display: tileContainerDisplayStyle }">
+                <img v-bind:src="tile.imageFullPath" v-show="hasUploadedPhoto && !editingPhoto" />
+            </div>
+        </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('tile', {
+        template: '#tile-template',
+        props: {
+            tile: Object
+        },
+        data: function () {
+            return {
+                croppie: null,
+                croppieViewport: {
+                    width: 248,
+                    height: 248
+                },
+                buttonView: false,
+                labelView: true,
+                editingPhoto: false,
+                isLoadingImage: false,
+                photoService: new PhotoService({ rootUrl: "@Url.Content("~/")" }),
+                tileService: new TileService({ rootUrl: "@Url.Content("~/")" }),
+            }
+        },
+        computed: {
+            isMobile: function() {
+                if (window.matchMedia("(max-width: 500px)").matches) {
+                    return true;
+                };
+            },
+            hasPhoto: function () {
+                return this.tile.imageFullPath != null || this.editingPhoto;
+            },
+            hasUploadedPhoto: function () {
+                return this.tile.imageFullPath != null;
+            },
+            fileInputID: function () {
+                return 'file-' + this.tile.tileID;
+            },
+            tileImageContainerID: function () {
+                return 'tile-image-container-' + this.tile.tileID;
+            },
+            tileContainerDisplayStyle: function () {
+                return this.hasPhoto ? 'inline-block' : 'inline-flex';
+            },
+            headerFontSize: function () {
+                if (this.isMobile == true && this.tile.title.length > 18)
+                { return "16px" }
+            },
+        },
+        watch: {
+            isLoadingImage: function (newValue, oldValue) {
+                newValue ? $('body').block() : $('body').unblock();
+            },
+        },
+        methods: {
+            tileLabelToggle: function () {
+                var vm = this;
+                if (vm.hasPhoto === true) {
+                    if (vm.labelView === true) {
+                        vm.buttonView = true;
+                        vm.labelView = false
+                    }
+                    else if (vm.buttonView === true) {
+                        vm.buttonView = false;
+                        vm.labelView = false
+                    }
+                    else if (vm.labelView === false && vm.buttonView === false) {
+                        vm.labelView = true;
+                        vm.buttonView = false;
+                    }
+                }
+                else {
+                    vm.buttonView = false;
+                    vm.labelView = true;
+                    document.getElementById(vm.fileInputID).click();
+                }
+            },
+            clearFileInput: function () {
+                var vm = this;
+                var $fileInput = $('#' + vm.fileInputID);
+                if ($fileInput.length > 0) {
+                    $fileInput[0].value = "";
+                }
+            },
+            editPhoto: function (event) {
+                var fileInput = event.target;
+                if (fileInput.files.length == 0) {
+                    return;
+                }
+
+                var vm = this;
+
+                vm.isLoadingImage = true;
+
+                var fileReader = new FileReader();
+                fileReader.onloadend = function () {
+                    vm.croppie.bind({ url: fileReader.result });
+                    vm.editingPhoto = true;
+                    vm.isLoadingImage = false;
+                }
+
+                var imageContainer = document.getElementById(vm.tileImageContainerID);
+                vm.croppie = new Croppie(imageContainer, {
+                    viewport: vm.croppieViewport,
+                    showZoomer: false,
+                    enableExif: true,
+                });
+
+                fileReader.readAsDataURL(fileInput.files[0]);
+            },
+            removePhoto: function () {
+                //TODO: update this to be a modal instead of the default browser confirm box
+                var vm = this;
+                var remove = confirm("Are you sure you want to remove the photo for " + vm.tile.title + "?");
+                if (!remove) {
+                    return;
+                }
+
+                if (vm.croppie != null) {
+                    vm.croppie.destroy();
+                    vm.croppie = null;
+                }
+
+                var hasUploadedPhoto = vm.tile.imageFullPath != null;
+                if (hasUploadedPhoto && !vm.editingPhoto) {
+                    var fileName = vm.tile.imageFileName;
+                    vm.photoService.delete(fileName).then(function (data) {
+                        vm.tile.imageFullPath = null;
+                        vm.tile.imageFileName = null;
+                        vm.tileService.deleteAccountTile(vm.tile.tileID).then(function (data) {
+                        });
+                    });
+                    vm.toggleTrigger = false;
+                }
+
+                //This source code will execute before the delete photo and deleteAccountTile api calls are completed.
+                //This would be considered an example of "optimistic updates",(oppose to "pessimistic updates"), because it is assuming the api calls will succeed
+                vm.editingPhoto = false;
+                vm.clearFileInput();
+            },
+            replacePhoto: function () {
+                var vm = this;
+                $('#' + vm.fileInputID).click();
+            },
+            uploadPhoto: function () {
+                var vm = this;
+                vm.croppie.result('base64').then(function (base64) {
+                    vm.croppie.result('blob').then(function (blob) {
+                        var isReplacingExistingPhoto = vm.tile.imageFullPath != null;
+                        var previousPhotoFileName = vm.tile.imageFileName;
+                        var imageContainer = document.getElementById(vm.tileImageContainerID);
+
+                        vm.photoService.add(base64, blob.type).then(function (data) {
+                            vm.croppie.destroy();
+                            vm.croppie = null;
+
+                            vm.tile.imageFileName = data.fileName;
+                            vm.tile.imageFullPath = data.fullPath;
+
+                            if (isReplacingExistingPhoto) {
+                                vm.photoService.delete(previousPhotoFileName).then(function (data) {
+                                    //      in order to have "CreatedDate" reflect the most updated timestamp
+                                    //      when a user "replaces" a photo, tile must be deleted, and a new one created
+                                    //TODO: Or, add a "LastModified" timestamp to the "AccountTile" table to allow updating just the filename?
+                                    vm.tileService.deleteAccountTile(vm.tile.tileID).then(function (data) {
+                                        vm.tileService.addAccountTile(vm.tile).then(function (data) {
+                                            vm.editingPhoto = false;
+                                            vm.clearFileInput();
+                                            vm.$emit('photo-uploaded');
+                                        });
+                                    });
+                                });
+                            }
+                            else {
+                                vm.tileService.addAccountTile(vm.tile).then(function (data) {
+                                    vm.editingPhoto = false;
+                                    vm.clearFileInput();
+                                    vm.$emit('photo-uploaded');
+                                });
+                            }
+                        });
+                    });
+                });
+            },
+        }
+    });
+</script>

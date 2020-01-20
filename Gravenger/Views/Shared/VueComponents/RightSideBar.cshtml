@@ -1,0 +1,42 @@
+﻿<script type="text/x-template" id="right-sidebar-template">
+    <div class="rightbox" id="rightsidebar">
+        <center>
+            <p class="username">
+                <a v-bind:href="profilePageUrl">{{ profile.username }}</a>
+            </p>
+            <br />
+            <user-card-list v-bind:cards="cards"></user-card-list>
+        </center>
+    </div>
+</script>
+
+<script type="text/javascript">
+    Vue.component('right-sidebar', {
+        template: '#right-sidebar-template',
+        data: function () {
+            return {
+                apiUrls: {
+                    profile: "@Url.Content("~/api/account/" + User.Identity.GetAccountID())",
+                },
+                profile: {
+                    username: ''
+                },
+                cards: [],
+                currentlyViewedCard: {},
+                profilePageUrl: "@Url.Content("~/Profile")"
+            }
+        },
+        created: function () {
+            this.loadProfile();
+        },
+        methods: {
+            loadProfile: function () {
+                var vm = this;
+                $.get(vm.apiUrls.profile, function (data) {
+                    vm.profile.username = data.username;
+                    vm.cards = data.postcards;
+                });
+            },
+        },
+    });
+</script>
