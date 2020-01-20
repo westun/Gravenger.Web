@@ -6,6 +6,7 @@
 
 trigger:
 - master
+- releases/*
 
 pool:
   vmImage: 'windows-latest'
@@ -36,7 +37,7 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-    
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
